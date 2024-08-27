@@ -1,0 +1,71 @@
+.routes-container {
+  @apply flex lg:w-[83vw] w-screen flex-col;
+}
+
+.main-content {
+  @apply p-4 overflow-auto;
+}
+
+.rdt_TableCol_Sortable {
+  @apply cursor-pointer font-bold;
+}
+
+.grid-2 {
+  @apply grid lg:grid-cols-2 grid-cols-1 place-items-center bg-slate-50 w-screen h-screen dark:bg-dark_bg_4 dark:text-dark_text_1;
+}
+
+.logo-container {
+  @apply dark:bg-dark_bg_4 hidden lg:block bg-slate-50 w-full h-full px-5 py-3;
+}
+
+.logo {
+  @apply w-full h-full object-contain;
+}
+
+.form-container {
+  @apply dark:bg-dark_bg_5 lg:w-full flex bg-white lg:h-full flex-col gap-4 justify-center items-start w-[90%] shadow lg:px-36 p-8;
+}
+
+.forget-pass {
+  @apply flex w-full justify-end text-sm font-semibold cursor-pointer;
+}
+
+.input-container {
+  @apply w-full;
+}
+
+.dropdown-menu {
+  @apply dark:bg-dark_bg_2 bg-card_bg drop-shadow-md dark:text-dark_text_1  rounded absolute top-9 right-10  px-5 py-3 w-fit flex flex-col gap-3;
+}
+
+.dropdown-item {
+  @apply tracking-wider text-[.85rem] whitespace-nowrap hover:opacity-80 font-[550];
+}
+
+.sub-heading {
+  @apply dark:text-dark_text_1 font-bold text-sm;
+}
+
+.card-view {
+  @apply grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4;
+}
+
+.modal-item-heading {
+  @apply font-semibold my-5;
+}
+
+.modal-item-container {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 p-5 gap-5;
+}
+
+.drag-drop-container {
+  @apply border-2 border-dashed border-gray-300 max-h-32 h-32 min-h-32 overflow-hidden flex justify-center items-center rounded-lg cursor-pointer focus:outline-none transition-colors duration-300 ease-in-out;
+}
+
+.drag-drop-subContainer {
+  @apply flex items-center justify-center p-6 font-semibold;
+}
+
+.image-container {
+  @apply w-20 h-20 dark:border border-2 rounded overflow-hidden border-gray-200  dark:border-gray-100;
+}
