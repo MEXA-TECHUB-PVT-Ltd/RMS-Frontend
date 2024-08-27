@@ -248,7 +248,7 @@ const Purchasereceive = () => {
                 viewType={viewType}
                 onViewType={setViewType}
             // onSearch={handleSearch}
-            // onAddButtonClick={() => navigate("/add-purchase-receives")}
+            onAddButtonClick={() => navigate("/add-purchase-receives")}
             />
 
             {/* <div className="py-5 px-10"> */}

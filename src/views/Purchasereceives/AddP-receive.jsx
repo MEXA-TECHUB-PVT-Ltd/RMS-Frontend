@@ -131,42 +131,41 @@ const AddPurchaseReceive = () => {
     };
 
     const [itemdetails, setItemdetails] = useState([]);
-    const fetchItemByID = async (setFieldValue, vendor_id) => {
-
-        console.log(":ok12", poID, vendor_id);
+    const fetchItemByID = async (vendor_id) => {
         try {
             const promises = vendor_id.map(async (id) => {
-                // Fetch the item details by ID (assuming fetchSingleItemByID is your API call) 
-
                 const response = await fetch(`${API_URL}/purchase/receives/get/purchase/item?purchase_order_id=${poID}&vendor_id=${id}`);
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
-
-                // console.log("data data", data);
-                return data.result; // Adjust this based on your API response structure
+                return data.result;
             });
 
             const itemsDetailsArray = await Promise.all(promises);
-            console.log("item detail", itemsDetailsArray);
 
-            const flattenedItems = itemsDetailsArray.flat();
+            // Flatten the array to merge items from multiple vendors
+            const flatItems = itemsDetailsArray.reduce((acc, details) => {
+                details.items.forEach(item => {
+                    acc.push({
+                        item_id: item.item_id,
+                        available_stock: item.available_stock,
+                        required_quantity: item.required_quantity,
+                        price: item.price,
+                        purchase_item_ids: details.purchase_item_ids,
+                    });
+                });
+                return acc;
+            }, []);
 
-            console.log("flattenedItems", flattenedItems);
+            console.log("flatItems", flatItems);
 
-            setItemdetails(flattenedItems);
-
-            flattenedItems.forEach((item, index) => {
-                setFieldValue(`items[${index}].item_id`, item.item_id);
-                setFieldValue(`items[${index}].quantity_received`, item.required_quantity);
-                setFieldValue(`items[${index}].rate`, item.price);
-                setFieldValue(`items[${index}].preferred_vendor_ids`, item.preffered_vendor_ids || []);
-            });
+            return flatItems;
 
         } catch (error) {
             console.log(error.message);
+            return [];
         }
     };
 
@@ -202,79 +201,79 @@ const AddPurchaseReceive = () => {
     const [newitem, setNewitem] = useState("");
 
     const handleAddPR = async (data) => {
-        // console.log(data, data.items);  
+        console.log(data);
 
-        const formData = new FormData();
+        // const formData = new FormData();
 
-        const formatDateToISO = (dateString) => {
-            const date = new Date(dateString);
-            return date.toISOString();  // Converts to 'YYYY-MM-DDTHH:mm:ss.sssZ'
-        };
+        // const formatDateToISO = (dateString) => {
+        //     const date = new Date(dateString);
+        //     return date.toISOString();  // Converts to 'YYYY-MM-DDTHH:mm:ss.sssZ'
+        // };
 
-        setIsLoading(true);
-        setTimeout(() => {
+        // setIsLoading(true);
+        // setTimeout(() => {
 
-            const totalAmount = data.items.reduce((total, item) => total + parseFloat(item.price || 0), 0);
+        //     const totalAmount = data.items.reduce((total, item) => total + parseFloat(item.price || 0), 0);
 
-            // console.log("Total Amount:", totalAmount);
+        //     // console.log("Total Amount:", totalAmount);
 
-            const InsertAPIURL = `${API_URL}/purchase-requisition/create`;
+        //     const InsertAPIURL = `${API_URL}/purchase-requisition/create`;
 
-            formData.append("pr_number", data.po_no);
-            formData.append("status", "DRAFT");
-            formData.append("pr_detail", data.pr_detail);
-            formData.append("priority", data.priority);
-            formData.append("requested_by", data.requested_by);
-            formData.append("requested_date", formatDateToISO(data.requested_date));
-            formData.append("received_date", formatDateToISO(data.received_date));
-            formData.append("shipment_preferences", data.shipment_pre);
-            formData.append("delivery_address", data.shipment_address);
+        //     formData.append("pr_number", data.po_no);
+        //     formData.append("status", "DRAFT");
+        //     formData.append("pr_detail", data.pr_detail);
+        //     formData.append("priority", data.priority);
+        //     formData.append("requested_by", data.requested_by);
+        //     formData.append("requested_date", formatDateToISO(data.requested_date));
+        //     formData.append("received_date", formatDateToISO(data.received_date));
+        //     formData.append("shipment_preferences", data.shipment_pre);
+        //     formData.append("delivery_address", data.shipment_address);
 
-            const items = data.items.map((item) => ({
-                "item_id": item.item_id,
-                "available_stock": item.available_stock,
-                "required_quantity": item.required_quantity,
-                "price": item.price,
-                "preffered_vendor_ids": item.preferred_vendor_ids
-            }));
+        //     const items = data.items.map((item) => ({
+        //         "item_id": item.item_id,
+        //         "available_stock": item.available_stock,
+        //         "required_quantity": item.required_quantity,
+        //         "price": item.price,
+        //         "preffered_vendor_ids": item.preferred_vendor_ids
+        //     }));
 
-            formData.append("items", JSON.stringify(items));
+        //     formData.append("items", JSON.stringify(items));
 
-            formData.append("total_amount", totalAmount);
+        //     formData.append("total_amount", totalAmount);
 
-            fetch(InsertAPIURL, {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => response.json())
-                .then(response => {
-                    console.log(response);
-                    setIsLoading(false);
+        //     fetch(InsertAPIURL, {
+        //         method: 'POST',
+        //         body: formData,
+        //     })
+        //         .then(response => response.json())
+        //         .then(response => {
+        //             console.log(response);
+        //             setIsLoading(false);
 
-                    if (response.success) {
-                        setIsLoading(false);
-                        toast.success(response.message);
-                        navigate("/puchase-requisition");
-                        // setItems([{
-                        //     item_id: "",
-                        //     available_stock: "",
-                        //     required_quantity: "",
-                        //     price: "",
-                        //     preffered_vendor_ids: []
-                        // }]);
-                        // resetForm();
-                    } else {
-                        setIsLoading(false);
-                        toast.error(response.error.message);
-                    }
-                })
-                .catch(error => {
-                    setIsLoading(false);
-                    toast.error(error.message, {
-                        position: toast.POSITION.BOTTOM_CENTER
-                    });
-                });
-        }, 3000);
+        //             if (response.success) {
+        //                 setIsLoading(false);
+        //                 toast.success(response.message);
+        //                 navigate("/puchase-requisition");
+        //                 // setItems([{
+        //                 //     item_id: "",
+        //                 //     available_stock: "",
+        //                 //     required_quantity: "",
+        //                 //     price: "",
+        //                 //     preffered_vendor_ids: []
+        //                 // }]);
+        //                 // resetForm();
+        //             } else {
+        //                 setIsLoading(false);
+        //                 toast.error(response.error.message);
+        //             }
+        //         })
+        //         .catch(error => {
+        //             setIsLoading(false);
+        //             toast.error(error.message, {
+        //                 position: toast.POSITION.BOTTOM_CENTER
+        //             });
+        //         });
+        // }, 3000);
 
     };
 
@@ -293,11 +292,11 @@ const AddPurchaseReceive = () => {
         shipment_address: Yup.string().required('Shipment Address is required'),
         items: Yup.array().of(
             Yup.object().shape({
-                item_id: Yup.string().required('Item ID is required'),
+                vendor_id: Yup.string().required('Item ID is required'),
                 available_stock: Yup.number().required('Stock in hand is required').typeError('Stock in hand must be a number'),
                 required_quantity: Yup.number().required('Required quantity is required').typeError('Required quantity must be a number'),
                 price: Yup.number().required('Price is required').typeError('Price must be a number'),
-                preferred_vendor_ids: Yup.array().of(Yup.string()).required('Preferred Vendor is required'),
+                // purchase_item_ids: Yup.array().of(Yup.string()).required('purchase_item_ids is required'),
             })
         ).min(1, 'At least one item is required'),
         vendor: Yup.array().of(Yup.string()).required('At least one vendor is required'),
@@ -310,7 +309,7 @@ const AddPurchaseReceive = () => {
             if (!item.available_stock) errors[`items[${index}].available_stock`] = 'Stock in hand is required';
             if (!item.required_quantity) errors[`items[${index}].required_quantity`] = 'Required quantity is required';
             if (!item.price) errors[`items[${index}].price`] = 'Price is required';
-            if (item.preferred_vendor_ids.length === 0) errors[`items[${index}].preferred_vendor_ids`] = 'Preferred Vendor is required';
+            if (!item.purchase_item_ids.length) errors[`items[${index}].purchase_item_ids`] = 'purchase_item_ids is required';
         });
         return errors;
     };
@@ -349,21 +348,83 @@ const AddPurchaseReceive = () => {
                     received_date: "",
                     items: [],
                 }}
-                validationSchema={validationSchemaProduct}
-                onSubmit={(values, { setErrors }) => {
-                    const itemErrors = validateItems(values.items);
-                    setItemErrors(itemErrors);
+                validationSchema={Yup.object({
+                    po_no: Yup.string().required('PR Number is required'),
+                    received_date: Yup.date().required('Required Date is required'),
+                    items: Yup.array().of(
+                        Yup.object().shape({
+                            vendor_id: Yup.string().required('Vendor ID is required'),
+                            available_stock: Yup.number().required('Stock in hand is required'),
+                            required_quantity: Yup.number().required('Required quantity is required'),
+                            price: Yup.number().required('Price is required'),
+                        })
+                    ).min(1, 'At least one item is required'),
+                })}
+                onSubmit={(values) => {
+                    const itemIds = new Set(); // To collect unique item IDs
+                    const vendorItemsMap = new Map(); // To group items by vendor ID
 
-                    if (Object.keys(itemErrors).length > 0) {
-                        setErrors(itemErrors);
-                        return;
-                    }
-                    handleAddPR(values);
+                    values.items.forEach(item => {
+                        itemIds.add(item.purchase_item_ids[0]); // Assuming only one ID per item
+
+                        if (!vendorItemsMap.has(item.vendor_id)) {
+                            vendorItemsMap.set(item.vendor_id, []);
+                        }
+
+                        vendorItemsMap.get(item.vendor_id).push({
+                            quantity_received: item.required_quantity,
+                            rate: item.price
+                        });
+                    });
+
+                    const transformedData = {
+                        purchase_order_id: values.po_no,
+                        item_ids: Array.from(itemIds),
+                        items: Array.from(vendorItemsMap.entries()).map(([vendor_id, items]) => ({
+                            vendor_ids: [vendor_id],
+                            ...items.reduce((acc, item) => {
+                                acc.quantity_received = (acc.quantity_received || 0) + item.quantity_received;
+                                acc.rate = item.rate; // Assuming rate is consistent for each vendor
+                                return acc;
+                            }, {})
+                        })),
+                        received_date: values.received_date
+                    };
+
+                    handleAddPR(transformedData); // Proceed with submission if there are no errors
                 }}
             >
                 {({ values, handleChange, handleSubmit, setFieldValue, validateField, errors, touched }) => {
+                    const handlePOChange = async (event) => {
+                        const poNumber = event.target.value;
+                        // Update Formik's field value
+                        setFieldValue('po_no', poNumber);
 
-                    fetchVendors(values.po_number);
+                        // Perform additional actions
+                        await fetchVendors(poNumber);
+                        await fetchItems(poNumber);
+                        setpoID(poNumber);
+                    };
+
+                    const handleItemSelection = async (selectedVendorIds) => {
+                        const updatedItems = selectedVendorIds.map(id => ({
+                            vendor_id: id,
+                            available_stock: '',
+                            required_quantity: '',
+                            price: '',
+                            purchase_item_ids: [],
+                        }));
+
+                        setFieldValue('items', updatedItems);
+
+                        const items = await fetchItemByID(selectedVendorIds);
+                        const finalItems = items.map((item, index) => ({
+                            ...updatedItems[index],
+                            ...item,
+                        }));
+
+                        setFieldValue('items', finalItems);
+                    };
 
                     const handleItemFieldChange = (index, field, value) => {
                         setFieldValue(`items[${index}].${field}`, value);
@@ -377,106 +438,86 @@ const AddPurchaseReceive = () => {
                         validateField(`items[${index}].${field}`);
                     };
 
-                    const handleItemSelection = (selectedItemIds) => {
-                        const updatedItems = [];
-
-                        selectedItemIds.forEach(id => {
-                            const existingItems = updatedItems.filter(item => item.vendor_id === id);
-                            updatedItems.push({
-                                vendor_id: id,
-                                available_stock: '',
-                                required_quantity: '',
-                                price: '',
-                                preferred_vendor_ids: [],
-                            });
-                        });
-
-                        setFieldValue('items', updatedItems);
-
-                        console.log("ok ok", selectedItemIds);
-
-                        fetchItemByID(setFieldValue, updatedItems.map((item) => (item.vendor_id)));
-
-                        const errors = validateItems(updatedItems);
-                        setItemErrors(errors);
-                    };
-
-                    const handlePreferredVendorChange = (index, selectedVendors) => {
-                        setFieldValue(`items[${index}].preferred_vendor_ids`, selectedVendors);
-                        validateField(`items[${index}].preferred_vendor_ids`);
-                    };
-
                     return (
                         <Form>
-                            <div>
-                                <div className="modal-item-container">
-                                    <div>
-                                        <AppSelect
-                                            label="PO Number"
-                                            name="po_number"
-                                            value={values.po_number}
-                                            options={posOptions}
-                                            onChange={(event) => {
-                                                handleChange("po_number");
-                                                fetchVendors(event.target.value);
-                                                fetchItems(event.target.value)
-                                                setpoID(event.target.value);
-                                            }}
-                                        />
-                                        <ErrorMessage name="po_number" />
-                                    </div>
-                                    <div>
-                                        <AppInput
-                                            type="date"
-                                            label="Receive Date"
-                                            name="received_date"
-                                            value={values.received_date}
-                                            onChange={handleChange}
-                                        />
-                                        <ErrorMessage name="received_date" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div>
-                                    <div>
-                                        <AppMultiSelect
-                                            label="Vendors"
-                                            name="items"
-                                            value={values.items.map(item => item.vendor_id)}
-                                            options={vendorOptions}
-                                            onChange={handleItemSelection}
-                                            isMulti={true}
-                                        />
-                                        {errors.items && values.items && values.items.length === 0 && (
-                                            <div style={{ color: 'red', fontSize: "13px" }}>Item is required</div>
-                                        )}
-                                    </div>
+                            <div className="modal-item-container">
+                                <div>
+                                    <AppSelect
+                                        label="PO Number"
+                                        name="po_number"
+                                        value={values.po_no}
+                                        options={posOptions}
+                                        onChange={handlePOChange}
+                                    />
+                                    <ErrorMessage name="po_no" />
                                 </div>
+                                <div>
+                                    <AppInput
+                                        type="date"
+                                        label="Receive Date"
+                                        name="received_date"
+                                        value={values.received_date}
+                                        onChange={handleChange}
+                                    />
+                                    <ErrorMessage name="received_date" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                </div>
+                                <div>
+                                    <AppMultiSelect
+                                        label="Vendors"
+                                        name="vendor_id"
+                                        value={values.items.map(item => item.vendor_id)}
+                                        options={vendorOptions}
+                                        onChange={handleItemSelection}
+                                        isMulti={true}
+                                    />
+                                    {errors.items && values.items.length === 0 && (
+                                        <div style={{ color: 'red', fontSize: "13px" }}>Item is required</div>
+                                    )}
+                                </div>
+                            </div>
 
-                                {/* {values.items.map((item, index) => (
+                            {values.items.map((item, index) => (
+                                item.vendor_id && (
                                     <div className="m-4 grid xs:grid-cols-12 md:grid-cols-5 gap-2" key={`${item.item_id}-${index}`}>
                                         <div>
-                                            <AppMultiSelect
-                                                label="Purchase Item"
-                                                // name={`items[${index}].preferred_vendor_ids`}
-                                                // value={item.preferred_vendor_ids} 
-                                                onChange={(selectedVendors) => handlePreferredVendorChange(index, selectedVendors)}
-                                                isMulti={true}
+                                            <AppInput
+                                                type="text"
+                                                label="Item"
+                                                name={`items[${index}].item_id`}
+                                                value={item.item_id}
+                                                onChange={(e) => handleItemFieldChange(index, 'item_id', e.target.value)}
                                             />
-                                            {itemErrors[`items[${index}].preferred_vendor_ids`] && (
+                                            {errors.items?.[index]?.item_id && touched.items?.[index]?.item_id && (
                                                 <div style={{ color: "red", fontSize: "13px" }}>
-                                                    {itemErrors[`items[${index}].preferred_vendor_ids`]}
+                                                    {errors.items[index].item_id}
                                                 </div>
                                             )}
                                         </div>
                                         <div>
                                             <AppInput
                                                 type="number"
-                                                label="Received quantity"
-                                                name={`items[${index}].quantity_received`}
-                                                value={item.quantity_received}
-                                                onChange={(e) => handleItemFieldChange(index, 'quantity_received', e.target.value)}
+                                                label="Available Stock"
+                                                name={`items[${index}].available_stock`}
+                                                value={item.available_stock}
+                                                onChange={(e) => handleItemFieldChange(index, 'available_stock', e.target.value)}
                                             />
-                                            {itemErrors[`items[${index}].quantity_received`] && (
+                                            {errors.items?.[index]?.available_stock && touched.items?.[index]?.available_stock && (
                                                 <div style={{ color: "red", fontSize: "13px" }}>
-                                                    {itemErrors[`items[${index}].quantity_received`]}
+                                                    {errors.items[index].available_stock}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <AppInput
+                                                type="number"
+                                                label="Required Quantity"
+                                                name={`items[${index}].required_quantity`}
+                                                value={item.required_quantity}
+                                                onChange={(e) => handleItemFieldChange(index, 'required_quantity', e.target.value)}
+                                            />
+                                            {errors.items?.[index]?.required_quantity && touched.items?.[index]?.required_quantity && (
+                                                <div style={{ color: "red", fontSize: "13px" }}>
+                                                    {errors.items[index].required_quantity}
                                                 </div>
                                             )}
                                         </div>
@@ -484,19 +525,19 @@ const AddPurchaseReceive = () => {
                                             <AppInput
                                                 type="number"
                                                 label="Price"
-                                                name={`items[${index}].rate`}
-                                                value={item.rate}
-                                                onChange={(e) => handleItemFieldChange(index, 'rate', e.target.value)}
+                                                name={`items[${index}].price`}
+                                                value={item.price}
+                                                onChange={(e) => handleItemFieldChange(index, 'price', e.target.value)}
                                             />
-                                            {itemErrors[`items[${index}].rate`] && (
+                                            {errors.items?.[index]?.price && touched.items?.[index]?.price && (
                                                 <div style={{ color: "red", fontSize: "13px" }}>
-                                                    {itemErrors[`items[${index}].rate`]}
+                                                    {errors.items[index].price}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
-                                ))} */}
-                            </div>
+                                )
+                            ))}
                             <div className="flex-center">
                                 <div className="my-5 w-52">
                                     <Button
@@ -511,6 +552,7 @@ const AddPurchaseReceive = () => {
                     );
                 }}
             </Formik>
+
         </>
     );
 };
