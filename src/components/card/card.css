@@ -1,0 +1,11 @@
+.card {
+  @apply w-full h-auto dark:bg-dark_bg_5 bg-card_bg   rounded-md px-2 py-3 dark:text-dark_text_1 border-[.5px];
+}
+
+.card-body {
+  @apply px-4 py-2;
+}
+
+.card-item {
+  @apply w-full h-auto dark:text-dark_text_1 flex flex-between items-center py-1;
+}
