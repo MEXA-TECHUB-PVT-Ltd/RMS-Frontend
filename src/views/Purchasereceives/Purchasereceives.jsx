@@ -57,16 +57,24 @@ const Purchasereceive = () => {
             },
         },
         {
-            name: "Total Quantity",
-            selector: (row) => row.total_quantity == null || undefined ? "-" : row.total_quantity,
+            name: "Vendor",
+            selector: (row) => row.items[0]?.vendor_details?.vendor_display_name == null || undefined ? "-" : row?.items[0]?.vendor_details?.vendor_display_name,
             sortable: true,
             style: {
                 width: '100px', // Set the width you want
             },
         },
         {
-            name: "Remaining Quantity",
-            selector: (row) => row.remaining_quantity == null ? "-" : row.remaining_quantity,
+            name: "Total Quantity",
+            selector: (row) => row.items[0]?.total_quantity == null || undefined ? "-" : row?.items[0]?.total_quantity,
+            sortable: true,
+            style: {
+                width: '100px', // Set the width you want
+            },
+        },
+        {
+            name: "Quantity Received",
+            selector: (row) => row?.items[0]?.quantity_received == null ? "-" : row?.items[0]?.quantity_received,
             sortable: true,
             style: {
                 width: '100px', // Set the width you want
@@ -81,8 +89,8 @@ const Purchasereceive = () => {
             },
         },
         {
-            name: "Total Cose",
-            selector: (row) => row.total_cost == null ? "-" : <>{`$ ${row.total_cost}`}</>,
+            name: "Total Cost",
+            selector: (row) => row?.items[0]?.total_cost == null ? "-" : <>{`$ ${row?.items[0]?.total_cost}`}</>,
             sortable: true,
             style: {
                 width: '100px', // Set the width you want
@@ -247,8 +255,8 @@ const Purchasereceive = () => {
                 // buttonIcon={FaPlus}
                 viewType={viewType}
                 onViewType={setViewType}
-            // onSearch={handleSearch}
-            onAddButtonClick={() => navigate("/add-purchase-receives")}
+                // onSearch={handleSearch}
+                onAddButtonClick={() => navigate("/add-purchase-receives")}
             />
 
             {/* <div className="py-5 px-10"> */}
