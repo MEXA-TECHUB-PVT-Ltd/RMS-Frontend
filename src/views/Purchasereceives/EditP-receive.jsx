@@ -5,15 +5,14 @@ import { Formik, Form, FieldArray } from 'formik';
 import * as Yup from "yup";
 import { currency, paymentTerm } from "../../utils/vendor";
 import { useDispatch, useSelector } from "react-redux";
-import { getCurrencies } from "../../app/features/currency/getCurrencySlice";
-import { getPaymentTerms } from "../../app/features/paymentTerms/getPaymentTermSlice";
+import { getPRDetails } from "../../app/features/Purchasereceives/getPurchaseReceivesSlice";
 import AppSelect from "../../components/form/AppSelect";
 import { useDropzone } from "react-dropzone";
 import { FaChevronLeft, FaCloudUploadAlt, FaPlus, FaProductHunt } from "react-icons/fa";
 import { addVendor } from "../../app/features/Vendor/addVendorSlice";
 import toast from "react-hot-toast";
 import { Spinner } from "../../components/theme/Loader";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format, parseISO } from 'date-fns';
 import { getItems } from "../../app/features/Item/getItemSlice";
 import ErrorMessage from "../../components/form/ErrorMessage";
@@ -22,12 +21,18 @@ import imagePlaceholder from "../../assets/item_image.png";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const AddPurchaseReceive = () => {
+const EditPurchaseReceive = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const prId = searchParams.get("pr_id");
 
-    const [cnic_back_img, setCnic_back_img] = useState(null);
+    const { purchase_receives, error } = useSelector((state) => state.getPRs);
+
+    console.log("prdetail prdetail", purchase_receives);
+
     const [isLoading, setIsLoading] = useState(false);
+    const [cnic_back_img, setCnic_back_img] = useState(null);
 
     const onCnicBackDrop = useCallback((acceptedFile) => {
         setCnic_back_img(
@@ -58,13 +63,6 @@ const AddPurchaseReceive = () => {
         { value: "MEDIUM", label: "MEDIUM" },
         { value: "LOW", label: "LOW" }
     ];
-
-    useEffect(() => {
-        fetchCategories();
-        // fetchVendors();
-        fetchItems();
-        fetchPOs();
-    }, []);
 
     const [posOptions, setPOsOptions] = useState([]);
     const fetchPOs = async (value) => {
@@ -108,7 +106,7 @@ const AddPurchaseReceive = () => {
         }
     };
 
-    const [poID, setpoID] = useState("");
+    const [poID, setpoID] = useState(purchase_receives?.purchase_order_id);
     const [vendorOptions, setVendorOptions] = useState([]);
     const fetchVendors = async (value) => {
         console.log("value", value)
@@ -136,7 +134,16 @@ const AddPurchaseReceive = () => {
     const fetchItemByID = async (vendor_id) => {
         try {
             const promises = vendor_id.map(async (id) => {
-                const response = await fetch(`${API_URL}/purchase/receives/get/purchase/item?purchase_order_id=${poID}&vendor_id=${id}`);
+
+                console.log("poID", purchase_receives?.purchase_order_id)
+                let response;
+
+                if (poID == null || undefined) {
+                    response = await fetch(`${API_URL}/purchase/receives/get/purchase/item?purchase_order_id=${purchase_receives?.purchase_order_id}&vendor_id=${id}`);
+                } else {
+                    response = await fetch(`${API_URL}/purchase/receives/get/purchase/item?purchase_order_id=${poID}&vendor_id=${id}`);
+                }
+
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -179,6 +186,15 @@ const AddPurchaseReceive = () => {
         }
     };
 
+
+    useEffect(() => {
+        fetchCategories();
+        fetchVendors(purchase_receives?.purchase_order_id);
+        fetchItems(purchase_receives?.purchase_order_id);
+        fetchItemByID(purchase_receives?.purchase_order_id);
+        fetchPOs();
+    }, [purchase_receives, poID]);
+
     const [categoryOptions, setCategoryOptions] = useState([]);
     const fetchCategories = async () => {
 
@@ -211,58 +227,74 @@ const AddPurchaseReceive = () => {
     const [vendorLimitExceeded, setVendorLimitExceeded] = useState(false);
 
     const handleAddPR = async (data) => {
-        console.log(data);
+        // console.log(data);
 
         const formatDateToISO = (dateString) => {
             const date = new Date(dateString);
             return date.toISOString();  // Converts to 'YYYY-MM-DDTHH:mm:ss.sssZ'
         };
 
-        setIsLoading(true);
-        setTimeout(async () => {
-            const InsertAPIURL = `${API_URL}/purchase/receives/create`;
-            const headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            };
+        const vendorIds = Array.from(new Set(data.items.map(item => item.vendor_id)));
 
-            const vendorIds = Array.from(new Set(data.items.map(item => item.vendor_id)));
+        const transformedData = {
+            purchase_receive_id: purchase_receives?.id,
+            vendor_ids: vendorIds,
+            items: data.items.map(item => ({
+                item_id: item.item_id,
+                quantity_received: item.received_quantity,
+                rate: item.price,
+            })),
+            received_date: formatDateToISO(data.received_date),
+            description: data.description || "Received items for Purchase order",
+        };
 
-            const transformedData = {
-                purchase_order_id: data.po_no,
-                vendor_ids: vendorIds,
-                items: data.items.map(item => ({
-                    item_id: item.item_id,
-                    quantity_received: item.received_quantity,
-                    rate: item.price,
-                })),
-                received_date: formatDateToISO(data.received_date),
-                description: data.description || "Received items for Purchase order",
-            };
+        console.log("transformedData", transformedData);
 
-            await fetch(InsertAPIURL, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(transformedData),
-            })
-                .then(response => response.json())
-                .then(response => {
-                    console.log(response);
-                    setIsLoading(false);
-                    if (response.success) {
-                        setIsLoading(false);
-                        toast.success(response.message);
-                        console.log("API", result.success);
-                        navigate("/purchase-receives");
-                    } else {
-                        setIsLoading(false);
-                        toast.error(response.error.message);
-                    }
-                }).catch(error => {
-                    setIsLoading(false);
-                    // toast.error(error);
-                });
-        }, 3000);
+        // setIsLoading(true);
+        // setTimeout(async () => {
+        //     const InsertAPIURL = `${API_URL}/purchase/receives/create`;
+        //     const headers = {
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json',
+        //     };
+
+        //     const vendorIds = Array.from(new Set(data.items.map(item => item.vendor_id)));
+
+        //     const transformedData = {
+        //         purchase_order_id: data.po_no,
+        //         vendor_ids: vendorIds,
+        //         items: data.items.map(item => ({
+        //             item_id: item.item_id,
+        //             quantity_received: item.received_quantity,
+        //             rate: item.price,
+        //         })),
+        //         received_date: formatDateToISO(data.received_date),
+        //         description: data.description || "Received items for Purchase order",
+        //     };
+
+        //     await fetch(InsertAPIURL, {
+        //         method: 'POST',
+        //         headers: headers,
+        //         body: JSON.stringify(transformedData),
+        //     })
+        //         .then(response => response.json())
+        //         .then(response => {
+        //             console.log(response);
+        //             setIsLoading(false);
+        //             if (response.success) {
+        //                 setIsLoading(false);
+        //                 toast.success(response.message);
+        //                 console.log("API", result.success);
+        //                 navigate("/purchase-receives");
+        //             } else {
+        //                 setIsLoading(false);
+        //                 toast.error(response.error.message);
+        //             }
+        //         }).catch(error => {
+        //             setIsLoading(false);
+        //             toast.error(error);
+        //         });
+        // }, 3000);
     };
 
     const [itemErrors, setItemErrors] = useState({});
@@ -314,9 +346,13 @@ const AddPurchaseReceive = () => {
         };
     }, []);
 
-    const paddingLeftRight = windowWidth < 800 ? 0 : 300;
-
-    //////////////////// 
+    useEffect(() => {
+        try {
+            dispatch(getPRDetails({ id: prId })).unwrap();
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }, [prId]);
 
     return (
         <>
@@ -325,15 +361,27 @@ const AddPurchaseReceive = () => {
             >
                 <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
 
-                <h1 className="modal-item-heading">Add Purchase Receive</h1>
+                <h1 className="modal-item-heading">Edit Purchase Receive</h1>
             </div>
             <Formik
                 initialValues={{
-                    po_no: "",
-                    received_date: "",
-                    description: "",
-                    items: [],
+                    po_no: purchase_receives?.purchase_order_id ?? "",
+                    received_date: purchase_receives?.received_date ?? "",
+                    description: purchase_receives?.description ?? "",
+                    items: purchase_receives ? purchase_receives?.items?.map(item => ({
+                        vendor_id: item?.vendors[0]?.vendor_id || "",  // Assuming one vendor per item
+                        item_id: item?.item_id,
+                        name: item?.name,
+                        type: item?.type,
+                        image: item?.image,
+                        available_stock: item?.stock_in_hand,
+                        required_quantity: item?.required_quantity,
+                        received_quantity: item?.quantity_received,
+                        price: item?.rate,
+                        // purchase_item_ids: [item.item_id], // This may vary depending on your structure
+                    })) : []
                 }}
+                enableReinitialize={true}
                 validationSchema={Yup.object({
                     po_no: Yup.string().required('PR Number is required'),
                     received_date: Yup.date().required('Received Date is required'),
@@ -389,6 +437,7 @@ const AddPurchaseReceive = () => {
                             }));
 
                             setFieldValue('items', [...values.items, ...newItems]);
+
                         }
 
                         if (removedVendorIds.length > 0) {
@@ -439,7 +488,7 @@ const AddPurchaseReceive = () => {
                                     <AppMultiSelect
                                         label="Vendors"
                                         name="vendor_id"
-                                        value={values.items.map(item => item.vendor_id)}
+                                        value={values?.items?.map(item => item?.vendor_id)}
                                         options={vendorOptions}
                                         onChange={handleItemSelection}
                                         isMulti={true}
@@ -466,7 +515,7 @@ const AddPurchaseReceive = () => {
 
                             </div>
 
-                            {values.items.map((item, index) => {
+                            {values?.items?.map((item, index) => {
                                 return (
                                     item.vendor_id && (
                                         <div key={index} className="p-3 relative container mx-auto">
@@ -603,4 +652,4 @@ const AddPurchaseReceive = () => {
     );
 };
 
-export default AddPurchaseReceive;
+export default EditPurchaseReceive;

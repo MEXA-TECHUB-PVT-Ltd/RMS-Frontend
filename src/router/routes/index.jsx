@@ -14,9 +14,11 @@ import Purchaserequisition from "../../views/Purchaserequisition/Purchaserequisi
 import AddPurchaseRequistion from "../../views/Purchaserequisition/AddP-requisition"
 import EditPurchaseRequistion from "../../views/Purchaserequisition/EditP-requisition"
 import PurchaseRequisitionDetail from "../../views/Purchaserequisition/PurchaseRequisitionDetail"
-import Purchasereceive from "../../views/Purchasereceives/Purchasereceives" 
-import AddPurchaseReceive from "../../views/Purchasereceives/AddP-receive" 
-//  
+import Purchasereceive from "../../views/Purchasereceives/Purchasereceives"
+import AddPurchaseReceive from "../../views/Purchasereceives/AddP-receive"
+import PurchaseReceiveDetail from "../../views/Purchasereceives/PurchaseReceiveDetail"
+import EditPurchaseReceive from "../../views/Purchasereceives/EditP-receive"
+//  EditPurchaseReceive
 export default [
   {
     path: "/",
@@ -69,11 +71,19 @@ export default [
   {
     path: "/purchase-receives",
     element: <Purchasereceive />,
-  }, 
+  },
   {
     path: "/add-purchase-receives",
     element: <AddPurchaseReceive />,
-  },    
+  },
+  {
+    path: "/purchase-receive_details",
+    element: <PurchaseReceiveDetail />,
+  }, 
+  {
+    path: "/edit-purchase-receive",
+    element: <EditPurchaseReceive />,
+  },   
   {
     path: "/puchase-requisition",
     element: <Purchaserequisition />,
@@ -89,5 +99,5 @@ export default [
   {
     path: "/purchase-requisition-details",
     element: <PurchaseRequisitionDetail />,
-  },  
+  },
 ];

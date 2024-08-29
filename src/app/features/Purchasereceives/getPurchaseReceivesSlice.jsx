@@ -18,11 +18,11 @@ export const getPR = createAsyncThunk(
     }
 );
 
-export const getPODetails = createAsyncThunk(
-    "po/getpo",
+export const getPRDetails = createAsyncThunk(
+    "pr/getpr",
     async ({ id }, { rejectWithValue }) => {
         try {
-            const { data } = await axios.get(`${API_URL}/purchase/order/get?purchase_order_id=${id}`);
+            const { data } = await axios.get(`${API_URL}/purchase/receives/specific/get?id=${id}`);
             return data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -77,20 +77,20 @@ const getPRsSlice = createSlice({
                 state.success = action.payload.success;
             })
 
-            .addCase(getPODetails.pending, (state, action) => {
+            .addCase(getPRDetails.pending, (state, action) => {
                 state.isLoading = true;
             })
-            .addCase(getPODetails.fulfilled, (state, action) => {
+            .addCase(getPRDetails.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.error = null;
-                state.podetail = action.payload.result; // Use podetail state
+                state.purchase_receives = action.payload.result; // Use podetail state
                 state.message = action.payload.message;
                 state.success = action.payload.success;
             })
-            .addCase(getPODetails.rejected, (state, action) => {
+            .addCase(getPRDetails.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload;
-                state.podetail = null;
+                state.purchase_receives = null;
                 state.message = action.payload.message || action.payload.error.message;
                 state.success = action.payload.success;
             });

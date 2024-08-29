@@ -103,16 +103,24 @@ const Purchasereceive = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
-                    // onClick={() => navigate(`/puchase-order-details?po_id=${row.purchase_order_id}`)}
+                        onClick={() => navigate(`/purchase-receive_details?pr_id=${row.id}`)}
                     />
-                    <FaTrash
+
+
+                    <FaEdit
+                        size={20}
+                        className={`${textColor}`}
+                        onClick={() => navigate(`/edit-purchase-receive?pr_id=${row.id}`)}
+                    />
+
+                    {/* <FaTrash
                         size={15}
                         className="text-red-600 flex-none"
-                    // onClick={() => {
-                    //     setCurrentId(row.purchase_order_id);
-                    //     setDeleteModal(true);
-                    // }}
-                    />
+                        onClick={() => {
+                            setCurrentId(row);
+                            setDeleteModal(true);
+                        }}
+                    /> */}
                 </div >
             ),
             style: {
@@ -122,20 +130,27 @@ const Purchasereceive = () => {
     ];
 
 
-    const onDelete = () => {
+    const onCancel = () => {
 
+        console.log("currentId", currentId.purchase_order_id);
+        console.log("Item IDs", currentId?.items?.map((item) => item?.item_id));
         setLoading(true);
         setTimeout(() => {
-            const InsertAPIURL = `${API_URL}/purchase/order/delete?purchase_order_id=${currentId}`;
+            const InsertAPIURL = `${API_URL}/purchase/receives/cancel`;
             const headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             };
 
+            var Data = {
+                purchase_order_id: currentId?.purchase_order_id,
+                purchase_item_ids: currentId?.items?.map((item) => item?.item_id)
+            }
+
             fetch(InsertAPIURL, {
                 method: 'DELETE',
                 headers: headers,
-                body: JSON.stringify(),
+                body: JSON.stringify(Data),
             })
                 .then(response => response.json())
                 .then(response => {
@@ -168,10 +183,6 @@ const Purchasereceive = () => {
     }
 
     const sendtovendor = (row) => {
-
-        // console.log(row);
-        // console.log("purchase_requisition_id", row.purchase_requisition_id);
-        // console.log("vendor ids", row?.vendors_ids);
         setLoading(true);
         setTimeout(() => {
             const InsertAPIURL = `${API_URL}/purchase/order/send/vendor?purchase_order_id=${row?.purchase_order_id}`;
@@ -316,13 +327,13 @@ const Purchasereceive = () => {
             )}
 
             <Modal
-                title={"Delete Purchase Order"}
+                title={"Cancel Purchase Order"}
                 size="sm"
                 isOpen={deleteModal}
                 onClose={() => setDeleteModal(false)}
             >
                 <h1 className="flex-start text-base font-semibold">
-                    Are you sure want to delete this PO?{" "}
+                    Are you sure want to cancel this PO?{" "}
                 </h1>
 
                 <div className="flex-end gap-3 mt-5">
@@ -333,7 +344,7 @@ const Purchasereceive = () => {
                     />
                     <Button
                         title={"Delete"}
-                        onClick={loading ? "" : () => onDelete(currentId)}
+                        onClick={loading ? "" : () => onCancel(currentId)}
                         spinner={loading ? <Spinner size="sm" /> : null}
                     />
                 </div>
