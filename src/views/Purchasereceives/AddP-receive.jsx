@@ -76,17 +76,18 @@ const AddPurchaseReceive = () => {
             }
             const data = await response.json();
             console.log(data);
-            const formattedOrders = data.result.orders.map((order) => ({
+            const filteredOrders = data.result.orders.filter(order => order.status !== 'CANCELLED' && order.status !== 'FULLY DELIVERED');
+            const formattedOrders = filteredOrders.map((order) => ({
                 value: order.purchase_order_id,
                 label: order.purchase_order_number
             }));
             setPOsOptions(formattedOrders);
-            // fetchVendors(formattedOrders)
             console.log("formattedOrders", formattedOrders);
         } catch (error) {
             console.log(error.message);
         }
     };
+    
 
     const [itemOptions, setItemOptions] = useState([]);
     const fetchItems = async (value) => {
@@ -256,11 +257,11 @@ const AddPurchaseReceive = () => {
                         navigate("/purchase-receives");
                     } else {
                         setIsLoading(false);
-                        toast.error(response.error.message);
+                        toast.error(response.message);
                     }
                 }).catch(error => {
                     setIsLoading(false);
-                    // toast.error(error);
+                    toast.error(error.message);
                 });
         }, 3000);
     };

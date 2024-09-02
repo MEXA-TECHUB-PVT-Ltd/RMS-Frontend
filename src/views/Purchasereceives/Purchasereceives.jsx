@@ -32,11 +32,7 @@ const Purchasereceive = () => {
     const { textColor } = useSelector((state) => state.theme);
     // const { isLoading } = useSelector((state) => state.deleteVendor); 
 
-    const rows = [
-        { vendor: "John Doe", order_number: "1234567", delivery_date: "29-07-2024", status: "cancel" },
-        { vendor: "Harry Pottar", order_number: "1234567", delivery_date: "29-07-2024", status: "cancel" },
-        { vendor: "Harry Pottar", order_number: "1234567", delivery_date: "29-07-2024", status: "cancel" }
-    ]
+    const [posOptions, setPOsOptions] = useState([]);
 
     const prColumns = [
         // {
@@ -106,12 +102,15 @@ const Purchasereceive = () => {
                         onClick={() => navigate(`/purchase-receive_details?pr_id=${row.id}`)}
                     />
 
-
-                    <FaEdit
-                        size={20}
-                        className={`${textColor}`}
-                        onClick={() => navigate(`/edit-purchase-receive?pr_id=${row.id}`)}
-                    />
+                    {posOptions?.map((item) => (
+                        item.status == "FULLY DELIVERED" && "CANCELLED" ? <></>
+                            :
+                            <FaEdit
+                                size={20}
+                                className={`${textColor}`}
+                                onClick={() => navigate(`/edit-purchase-receive?pr_id=${row.id}`)}
+                            />
+                    ))}
 
                     {/* <FaTrash
                         size={15}
@@ -253,6 +252,28 @@ const Purchasereceive = () => {
         setSearchQuery(query);
         setCurrentPage(1); // Reset to first page on search
     };
+
+    const fetchPOs = async (value) => {
+        console.log("category", value);
+        try {
+            const response = await fetch(`${API_URL}/purchase/order/get/purchase/order`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log(data);
+
+            setPOsOptions(data?.result?.orders);
+            console.log("formattedOrders", data?.result?.orders);
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+
+
+    useEffect(() => {
+        fetchPOs();
+    }, []);
 
     useEffect(() => {
         dispatch(getPR({ currentPage, perPage: rowsPerPage, search: searchQuery }));

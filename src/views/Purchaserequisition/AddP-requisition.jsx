@@ -165,7 +165,7 @@ const AddPurchaseRequistion = () => {
     const [newitem, setNewitem] = useState("");
 
     const handleAddPR = async (data) => {
-        // console.log(data, data.items);  
+        console.log(data, data.items);
 
         const formData = new FormData();
 
@@ -260,9 +260,13 @@ const AddPurchaseRequistion = () => {
                 available_stock: Yup.number().required('Stock in hand is required').typeError('Stock in hand must be a number'),
                 required_quantity: Yup.number().required('Required quantity is required').typeError('Required quantity must be a number'),
                 price: Yup.number().required('Price is required').typeError('Price must be a number'),
-                preferred_vendor_ids: Yup.array().of(Yup.string()).required('Preferred Vendor is required'),
+                preferred_vendor_ids: Yup.array()
+                    .of(Yup.string().required('Vendor ID is required')) // Check if individual vendor IDs are required
+                    .min(1, 'Preferred Vendor is required') // Ensures that at least one vendor is selected
+                    .required('Preferred Vendor is required'),
             })
         ).min(1, 'At least one item is required'),
+
         vendor: Yup.array().of(Yup.string()).required('At least one vendor is required'),
     });
 
@@ -273,7 +277,7 @@ const AddPurchaseRequistion = () => {
             if (!item.available_stock) errors[`items[${index}].available_stock`] = 'Stock in hand is required';
             if (!item.required_quantity) errors[`items[${index}].required_quantity`] = 'Required quantity is required';
             if (!item.price) errors[`items[${index}].price`] = 'Price is required';
-            if (item.preferred_vendor_ids.length === 0) errors[`items[${index}].preferred_vendor_ids`] = 'Preferred Vendor is required';
+            if (!item.preferred_vendor_ids || item.preferred_vendor_ids.length === 0) errors[`items[${index}].preferred_vendor_ids`] = 'Preferred Vendor is required';
         });
         return errors;
     };
@@ -369,8 +373,19 @@ const AddPurchaseRequistion = () => {
                     };
 
                     const handlePreferredVendorChange = (index, selectedVendors) => {
+
                         setFieldValue(`items[${index}].preferred_vendor_ids`, selectedVendors);
+                        // Clear the error for this field if there's a value
+                        setItemErrors(prevErrors => {
+                            const newErrors = { ...prevErrors };
+                            if (selectedVendors) {
+                                delete newErrors[`items[${index}].preferred_vendor_ids`];
+                            }
+                            return newErrors;
+                        });
+                        // Validate the field
                         validateField(`items[${index}].preferred_vendor_ids`);
+
                     };
 
                     return (
@@ -387,16 +402,7 @@ const AddPurchaseRequistion = () => {
                                         />
                                         <ErrorMessage name="pr_no" component="div" style={{ color: "red", fontSize: "13px" }} />
                                     </div>
-                                    <div>
-                                        <AppInput
-                                            type="text"
-                                            label="PR Detail"
-                                            name="pr_detail"
-                                            value={values.pr_detail}
-                                            onChange={handleChange}
-                                        />
-                                        <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div>
+
                                     <div>
                                         <AppSelect
                                             label="Priority"
@@ -457,7 +463,8 @@ const AddPurchaseRequistion = () => {
                                         />
                                         <ErrorMessage name="shipment_address" component="div" style={{ color: "red", fontSize: "13px" }} />
                                     </div>
-                                    <div>
+
+                                    <div >
                                         <AppMultiSelect
                                             label="Item"
                                             name="items"
@@ -478,89 +485,120 @@ const AddPurchaseRequistion = () => {
                                             </>
                                         )}
                                     </div>
-                                </div>
 
+                                    <div>
+                                        <AppInput
+                                            type="textarea"
+                                            label="PR Detail"
+                                            name="pr_detail"
+                                            value={values.pr_detail}
+                                            onChange={handleChange}
+                                        />
+                                        <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                    </div>
+
+                                </div>
 
                                 {values.items.map((item, index) => {
                                     const itemDetail = itemdetails.find(detail => detail.id === item.item_id);
                                     return (
-                                        <div className="m-4 grid xs:grid-cols-12 md:grid-cols-5 gap-2">
-                                            <div>
-                                                {/* {itemDetail.map((item) => ( */}
-                                                <div className="border border-gray-400 p-2 rounded-lg col-span-12 sm:col-span-5 flex md:col-span-6 items-center">
-                                                    {itemDetail?.image == null || undefined ?
-                                                        <img src={imagePlaceholder} alt="item" className="border border-gray-400 rounded-lg p-2 w-20 mr-2" />
-                                                        :
-                                                        <img src={itemDetail?.image} alt="item" className="border border-gray-400 rounded-lg p-2 w-20 mr-2" />
-                                                    }
+                                        <div key={index} className="p-3 relative container mx-auto">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const updatedItems = values.items.filter((_, idx) => idx !== index);
+                                                    setFieldValue('items', updatedItems);
+                                                    setItemdetails(prevDetails => prevDetails.filter(detail => detail.vendor_id !== item.vendor_id));
+                                                }}
+                                                className="absolute top-0 right-0 m-1 border border-gray-500 w-8 rounded text-red-500 hover:bg-red-500 hover:text-white transition"
+                                            >
+                                                &#10005; {/* Cross icon */}
+                                            </button>
 
+                                            <div className="m-4 grid grid-cols-12 gap-4">
+                                                {/* Item Details Grid */}
+                                                <div className="mt-6 md:col-span-3 flex items-center border border-gray-400 p-2 rounded-lg" style={{ height: '80%' }}>
+                                                    <img
+                                                        src={itemDetail?.image || imagePlaceholder}
+                                                        alt="item"
+                                                        className="border border-gray-400 rounded-lg p-2 w-20 h-20 mr-2"
+                                                    />
                                                     <div>
-                                                        <div className="font-bold text-sm"> {itemDetail?.name}</div>
-                                                        <div className="font-bold text-sm">{itemDetail?.type}</div>
-                                                        {/* <div className="font-bold text-sm">"{"item?.item_details.category"}"</div> */}
+                                                        <div className="font-bold text-lg">{itemDetail?.name}</div>
+                                                        <div className="font-bold text-lg">{itemDetail?.type}</div>
                                                     </div>
                                                 </div>
 
-                                            </div>
-                                            <div>
-                                                <AppInput
-                                                    type="number"
-                                                    label="Stock in hand"
-                                                    name={`items[${index}].available_stock`}
-                                                    value={item.available_stock}
-                                                    onChange={(e) => handleItemFieldChange(index, 'available_stock', e.target.value)}
-                                                />
-                                                {itemErrors[`items[${index}].available_stock`] && (
-                                                    <div style={{ color: "red", fontSize: "13px" }}>
-                                                        {itemErrors[`items[${index}].available_stock`]}
+                                                {/* Fields Grid */}
+                                                <div className="md:col-span-9 grid grid-cols-12 gap-4">
+                                                    {/* Stock in Hand Field */}
+                                                    <div className="md:col-span-4">
+                                                        <AppInput
+                                                            type="number"
+                                                            label="Stock in hand"
+                                                            name={`items[${index}].available_stock`}
+                                                            value={item.available_stock}
+                                                            onChange={(e) => handleItemFieldChange(index, 'available_stock', e.target.value)}
+                                                        />
+                                                        {itemErrors[`items[${index}].available_stock`] && (
+                                                            <div style={{ color: "red", fontSize: "13px" }}>
+                                                                {itemErrors[`items[${index}].available_stock`]}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <AppInput
-                                                    type="number"
-                                                    label="Required quantity"
-                                                    name={`items[${index}].required_quantity`}
-                                                    value={item.required_quantity}
-                                                    onChange={(e) => handleItemFieldChange(index, 'required_quantity', e.target.value)}
-                                                />
-                                                {itemErrors[`items[${index}].required_quantity`] && (
-                                                    <div style={{ color: "red", fontSize: "13px" }}>
-                                                        {itemErrors[`items[${index}].required_quantity`]}
+
+                                                    {/* Required Quantity Field */}
+                                                    <div className="md:col-span-4">
+                                                        <AppInput
+                                                            type="number"
+                                                            label="Required quantity"
+                                                            name={`items[${index}].required_quantity`}
+                                                            value={item.required_quantity}
+                                                            onChange={(e) => handleItemFieldChange(index, 'required_quantity', e.target.value)}
+                                                        />
+                                                        {itemErrors[`items[${index}].required_quantity`] && (
+                                                            <div style={{ color: "red", fontSize: "13px" }}>
+                                                                {itemErrors[`items[${index}].required_quantity`]}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <AppInput
-                                                    type="number"
-                                                    label="Price"
-                                                    name={`items[${index}].price`}
-                                                    value={item.price}
-                                                    onChange={(e) => handleItemFieldChange(index, 'price', e.target.value)}
-                                                />
-                                                {itemErrors[`items[${index}].price`] && (
-                                                    <div style={{ color: "red", fontSize: "13px" }}>
-                                                        {itemErrors[`items[${index}].price`]}
+
+                                                    {/* Price Field */}
+                                                    <div className="md:col-span-4">
+                                                        <AppInput
+                                                            type="number"
+                                                            label="Price"
+                                                            name={`items[${index}].price`}
+                                                            value={item.price}
+                                                            onChange={(e) => handleItemFieldChange(index, 'price', e.target.value)}
+                                                        />
+                                                        {itemErrors[`items[${index}].price`] && (
+                                                            <div style={{ color: "red", fontSize: "13px" }}>
+                                                                {itemErrors[`items[${index}].price`]}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <AppMultiSelect
-                                                    label="Preferred Vendor"
-                                                    name={`items[${index}].preferred_vendor_ids`}
-                                                    value={item.preferred_vendor_ids}
-                                                    options={vendorOptions}
-                                                    onChange={(selectedVendors) => handlePreferredVendorChange(index, selectedVendors)}
-                                                    isMulti={true}
-                                                />
-                                                {itemErrors[`items[${index}].preferred_vendor_ids`] && (
-                                                    <div style={{ color: "red", fontSize: "13px" }}>
-                                                        {itemErrors[`items[${index}].preferred_vendor_ids`]}
+
+                                                    {/* Preferred Vendor Field */}
+                                                    <div className="md:col-span-12">
+                                                        <AppMultiSelect
+                                                            label="Preferred Vendor"
+                                                            name={`items[${index}].preferred_vendor_ids`}
+                                                            value={item.preferred_vendor_ids}
+                                                            options={vendorOptions}
+                                                            onChange={(selectedVendors) => handlePreferredVendorChange(index, selectedVendors)}
+                                                            isMulti={true}
+                                                        />
+                                                        {itemErrors[`items[${index}].preferred_vendor_ids`] && (
+                                                            <div style={{ color: "red", fontSize: "13px" }}>
+                                                                {itemErrors[`items[${index}].preferred_vendor_ids`]}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
+                                                </div>
                                             </div>
                                         </div>
-                                    )
+                                    );
                                 })}
 
                             </div>

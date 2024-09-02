@@ -138,6 +138,8 @@ const EditPurchaseRequisition = () => {
         }
     };
 
+    const [vendorLimitExceeded, setVendorLimitExceeded] = useState(false);
+
     const handleEditPR = async (data) => {
         console.log(data);
 
@@ -290,14 +292,7 @@ const EditPurchaseRequisition = () => {
                         required_quantity: item.required_quantity ?? "",
                         price: item.price ?? "",
                         preferred_vendor_ids: item?.preffered_vendor?.map((vendor) => vendor.id) ?? [],
-                        // name: item?.item_detail?.name ?? "", // Add name for display
-                        // type: item?.item_detail?.type ?? "",
-                        // image: item?.item_detail?.image ?? "",
                     })) ?? [],
-                    // vendor: prdetail.items_detail.map((item) => ({
-                    //     item?.preffered_vendor?.map((vendor) => vendor.id) ?? []
-                    // }))
-                    // flatMap((item) => item.preffered_vendor.map((vendor) => vendor.id)),
                 }}
                 enableReinitialize={true}
                 validationSchema={validationSchemaProduct}
@@ -326,27 +321,63 @@ const EditPurchaseRequisition = () => {
                     };
 
                     const handleItemSelection = (selectedItemIds) => {
-                        const updatedItems = selectedItemIds.map(id => {
-                            const existingItem = values.items.find(item => item.item_id === id);
-                            return existingItem || {
-                                item_id: id,
-                                available_stock: '',
-                                required_quantity: '',
-                                price: '',
-                                preferred_vendor_ids: []
-                            };
-                        });
-                        setFieldValue('items', updatedItems);
-                        const errors = validateItems(updatedItems);
-                        setItemErrors(errors);
 
-                        fetchItemByID(updatedItems.map((item) => (item.item_id)));
+
+                        if (selectedItemIds.length > 10) {
+                            setVendorLimitExceeded(true);
+                            return;
+                        } else {
+                            setVendorLimitExceeded(false);
+                        }
+
+                        const addedVendorIds = selectedItemIds.filter(id => !values.items.find(item => item.item_id === id));
+                        const removedVendorIds = values.items.map(item => item.item_id).filter(id => !selectedItemIds.includes(id));
+
+                        if (addedVendorIds.length > 0) {
+
+                            const updatedItems = selectedItemIds.map(id => {
+                                const existingItem = values.items.find(item => item.item_id === id);
+                                return existingItem || {
+                                    item_id: id,
+                                    available_stock: '',
+                                    required_quantity: '',
+                                    price: '',
+                                    preferred_vendor_ids: []
+                                };
+                            });
+                            setFieldValue('items', updatedItems);
+                            const errors = validateItems(updatedItems);
+                            setItemErrors(errors);
+
+                            fetchItemByID(updatedItems.map((item) => (item.item_id)));
+                        }
+
+                        if (removedVendorIds.length > 0) {
+                            const updatedItems = values.items.filter(item => !removedVendorIds.includes(item.item_id));
+                            setFieldValue('items', updatedItems);
+                        }
 
                     };
 
+                    // const handlePreferredVendorChange = (index, selectedVendors) => {
+                    //     setFieldValue(`items[${index}].preferred_vendor_ids`, selectedVendors);
+                    //     validateField(`items[${index}].preferred_vendor_ids`);
+                    // };
+
                     const handlePreferredVendorChange = (index, selectedVendors) => {
+
                         setFieldValue(`items[${index}].preferred_vendor_ids`, selectedVendors);
+                        // Clear the error for this field if there's a value
+                        setItemErrors(prevErrors => {
+                            const newErrors = { ...prevErrors };
+                            if (selectedVendors) {
+                                delete newErrors[`items[${index}].preferred_vendor_ids`];
+                            }
+                            return newErrors;
+                        });
+                        // Validate the field
                         validateField(`items[${index}].preferred_vendor_ids`);
+
                     };
 
                     return (
@@ -362,16 +393,7 @@ const EditPurchaseRequisition = () => {
                                     />
                                     <ErrorMessage name="pr_no" component="div" style={{ color: "red", fontSize: "13px" }} />
                                 </div>
-                                <div>
-                                    <AppInput
-                                        type="text"
-                                        label="PR Detail"
-                                        name="pr_detail"
-                                        value={values.pr_detail}
-                                        onChange={handleChange}
-                                    />
-                                    <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                </div>
+
                                 <div>
                                     <AppSelect
                                         label="Priority"
@@ -452,86 +474,123 @@ const EditPurchaseRequisition = () => {
                                         </>
                                     )}
                                 </div>
+
+                                <div>
+                                    <AppInput
+                                        type="textarea"
+                                        label="PR Detail"
+                                        name="pr_detail"
+                                        value={values.pr_detail}
+                                        onChange={handleChange}
+                                    />
+                                    <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                </div>
+
                             </div>
                             {values.items.map((item, index) => {
                                 const itemDetail = itemdetails.find(detail => detail.id === item.item_id);
                                 return (
-                                    <div className="m-4 grid xs:grid-cols-12 md:grid-cols-5 gap-2">
-                                        <div>
-                                            <div className="border border-gray-400 p-2 rounded-lg col-span-12 sm:col-span-5 flex md:col-span-6 items-center">
-                                                {itemDetail?.image == null || undefined ?
-                                                    <img src={imagePlaceholder} alt="item" className="border border-gray-400 rounded-lg p-2 w-20 mr-2" />
-                                                    :
-                                                    <img src={itemDetail?.image} alt="item" className="border border-gray-400 rounded-lg p-2 w-20 mr-2" />
-                                                }
+                                    <div key={index} className="p-3 relative container mx-auto">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const updatedItems = values.items.filter((_, idx) => idx !== index);
+                                                setFieldValue('items', updatedItems);
+                                                setItemdetails(prevDetails => prevDetails.filter(detail => detail.vendor_id !== item.vendor_id));
+                                            }}
+                                            className="absolute top-0 right-0 m-1 border border-gray-500 w-8 rounded text-red-500 hover:bg-red-500 hover:text-white transition"
+                                        >
+                                            &#10005; {/* Cross icon */}
+                                        </button>
 
+                                        <div className="m-4 grid grid-cols-12 gap-4">
+                                            {/* Item Details Grid */}
+                                            <div className="mt-6 md:col-span-3 flex items-center border border-gray-400 p-2 rounded-lg" style={{ height: '80%' }}>
+                                                <img
+                                                    src={itemDetail?.image || imagePlaceholder}
+                                                    alt="item"
+                                                    className="border border-gray-400 rounded-lg p-2 w-20 h-20 mr-2"
+                                                />
                                                 <div>
-                                                    <div className="font-bold text-sm"> {itemDetail?.name}</div>
-                                                    <div className="font-bold text-sm">{itemDetail?.type}</div>
+                                                    <div className="font-bold text-lg">{itemDetail?.name}</div>
+                                                    <div className="font-bold text-lg">{itemDetail?.type}</div>
                                                 </div>
                                             </div>
 
-                                        </div> 
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Stock in hand"
-                                                name={`items[${index}].available_stock`}
-                                                value={item.available_stock}
-                                                onChange={(e) => handleItemFieldChange(index, 'available_stock', e.target.value)}
-                                            />
-                                            {itemErrors[`items[${index}].available_stock`] && (
-                                                <div style={{ color: "red", fontSize: "13px" }}>
-                                                    {itemErrors[`items[${index}].available_stock`]}
+                                            {/* Fields Grid */}
+                                            <div className="md:col-span-9 grid grid-cols-12 gap-4">
+                                                {/* Stock in Hand Field */}
+                                                <div className="md:col-span-4">
+                                                    <AppInput
+                                                        type="number"
+                                                        label="Stock in hand"
+                                                        name={`items[${index}].available_stock`}
+                                                        value={item.available_stock}
+                                                        onChange={(e) => handleItemFieldChange(index, 'available_stock', e.target.value)}
+                                                    />
+                                                    {itemErrors[`items[${index}].available_stock`] && (
+                                                        <div style={{ color: "red", fontSize: "13px" }}>
+                                                            {itemErrors[`items[${index}].available_stock`]}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div> 
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Required quantity"
-                                                name={`items[${index}].required_quantity`}
-                                                value={item.required_quantity}
-                                                onChange={(e) => handleItemFieldChange(index, 'required_quantity', e.target.value)}
-                                            />
-                                            {itemErrors[`items[${index}].required_quantity`] && (
-                                                <div style={{ color: "red", fontSize: "13px" }}>
-                                                    {itemErrors[`items[${index}].required_quantity`]}
+
+                                                {/* Required Quantity Field */}
+                                                <div className="md:col-span-4">
+                                                    <AppInput
+                                                        type="number"
+                                                        label="Required quantity"
+                                                        name={`items[${index}].required_quantity`}
+                                                        value={item.required_quantity}
+                                                        onChange={(e) => handleItemFieldChange(index, 'required_quantity', e.target.value)}
+                                                    />
+                                                    {itemErrors[`items[${index}].required_quantity`] && (
+                                                        <div style={{ color: "red", fontSize: "13px" }}>
+                                                            {itemErrors[`items[${index}].required_quantity`]}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Price"
-                                                name={`items[${index}].price`}
-                                                value={item.price}
-                                                onChange={(e) => handleItemFieldChange(index, 'price', e.target.value)}
-                                            />
-                                            {itemErrors[`items[${index}].price`] && (
-                                                <div style={{ color: "red", fontSize: "13px" }}>
-                                                    {itemErrors[`items[${index}].price`]}
+
+                                                {/* Price Field */}
+                                                <div className="md:col-span-4">
+                                                    <AppInput
+                                                        type="number"
+                                                        label="Price"
+                                                        name={`items[${index}].price`}
+                                                        value={item.price}
+                                                        onChange={(e) => handleItemFieldChange(index, 'price', e.target.value)}
+                                                    />
+                                                    {itemErrors[`items[${index}].price`] && (
+                                                        <div style={{ color: "red", fontSize: "13px" }}>
+                                                            {itemErrors[`items[${index}].price`]}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <AppMultiSelect
-                                                label="Preferred Vendor"
-                                                name={`items[${index}].preferred_vendor_ids`}
-                                                value={item.preferred_vendor_ids}
-                                                options={vendorOptions}
-                                                onChange={(selectedVendors) => handlePreferredVendorChange(index, selectedVendors)}
-                                                isMulti={true}
-                                            />
-                                            {itemErrors[`items[${index}].preferred_vendor_ids`] && (
-                                                <div style={{ color: "red", fontSize: "13px" }}>
-                                                    {itemErrors[`items[${index}].preferred_vendor_ids`]}
+
+                                                {/* Preferred Vendor Field */}
+                                                <div className="md:col-span-12">
+                                                    <AppMultiSelect
+                                                        label="Preferred Vendor"
+                                                        name={`items[${index}].preferred_vendor_ids`}
+                                                        value={item.preferred_vendor_ids}
+                                                        options={vendorOptions}
+                                                        onChange={(selectedVendors) => handlePreferredVendorChange(index, selectedVendors)}
+                                                        isMulti={true}
+                                                    />
+                                                    {itemErrors[`items[${index}].preferred_vendor_ids`] && (
+                                                        <div style={{ color: "red", fontSize: "13px" }}>
+                                                            {itemErrors[`items[${index}].preferred_vendor_ids`]}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
-                                )
+                                );
                             })}
+
+
+
                             <div className="flex-center">
                                 <div className="my-5 w-52">
                                     <Button

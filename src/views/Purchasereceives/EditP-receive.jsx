@@ -74,12 +74,12 @@ const EditPurchaseReceive = () => {
             }
             const data = await response.json();
             console.log(data);
-            const formattedOrders = data.result.orders.map((order) => ({
+            const filteredOrders = data.result.orders.filter(order => order.status !== 'CANCELLED' && order.status !== 'FULLY DELIVERED');
+            const formattedOrders = filteredOrders.map((order) => ({
                 value: order.purchase_order_id,
                 label: order.purchase_order_number
             }));
             setPOsOptions(formattedOrders);
-            // fetchVendors(formattedOrders)
             console.log("formattedOrders", formattedOrders);
         } catch (error) {
             console.log(error.message);
@@ -133,6 +133,7 @@ const EditPurchaseReceive = () => {
     const [itemdetails, setItemdetails] = useState([]);
     const fetchItemByID = async (vendor_id) => {
         try {
+            console.log("fetchItemByID",vendor_id)
             const promises = vendor_id.map(async (id) => {
 
                 console.log("poID", purchase_receives?.purchase_order_id)
@@ -226,7 +227,7 @@ const EditPurchaseReceive = () => {
 
     const [vendorLimitExceeded, setVendorLimitExceeded] = useState(false);
 
-    const handleAddPR = async (data) => {
+    const handleEditPR = async (data) => {
         // console.log(data);
 
         const formatDateToISO = (dateString) => {
@@ -234,67 +235,68 @@ const EditPurchaseReceive = () => {
             return date.toISOString();  // Converts to 'YYYY-MM-DDTHH:mm:ss.sssZ'
         };
 
-        const vendorIds = Array.from(new Set(data.items.map(item => item.vendor_id)));
+        // const vendorIds = Array.from(new Set(data.items.map(item => item.vendor_id)));
 
-        const transformedData = {
-            purchase_receive_id: purchase_receives?.id,
-            vendor_ids: vendorIds,
-            items: data.items.map(item => ({
-                item_id: item.item_id,
-                quantity_received: item.received_quantity,
-                rate: item.price,
-            })),
-            received_date: formatDateToISO(data.received_date),
-            description: data.description || "Received items for Purchase order",
-        };
+        // const transformedData = {
+        //     purchase_receive_id: purchase_receives?.purchase_receive_id,
+        //     vendor_ids: vendorIds,
+        //     items: data.items.map(item => ({
+        //         item_id: item.item_id,
+        //         quantity_received: item.received_quantity,
+        //         rate: item.price,
+        //     })),
+        //     received_date: formatDateToISO(data.received_date),
+        //     description: data.description || "Received items for Purchase order",
+        // };
 
-        console.log("transformedData", transformedData);
+        // console.log("transformedData", transformedData);
 
-        // setIsLoading(true);
-        // setTimeout(async () => {
-        //     const InsertAPIURL = `${API_URL}/purchase/receives/create`;
-        //     const headers = {
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json',
-        //     };
+        setIsLoading(true);
+        setTimeout(async () => {
+            const InsertAPIURL = `${API_URL}/purchase/receives/update`;
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            };
 
-        //     const vendorIds = Array.from(new Set(data.items.map(item => item.vendor_id)));
+            const vendorIds = Array.from(new Set(data.items.map(item => item.vendor_id)));
 
-        //     const transformedData = {
-        //         purchase_order_id: data.po_no,
-        //         vendor_ids: vendorIds,
-        //         items: data.items.map(item => ({
-        //             item_id: item.item_id,
-        //             quantity_received: item.received_quantity,
-        //             rate: item.price,
-        //         })),
-        //         received_date: formatDateToISO(data.received_date),
-        //         description: data.description || "Received items for Purchase order",
-        //     };
+            const transformedData = {
+                purchase_receive_id: purchase_receives?.purchase_receive_id,
+                vendor_ids: vendorIds,
+                items: data.items.map(item => ({
+                    item_id: item.item_id,
+                    quantity_received: item.received_quantity,
+                    rate: item.price,
+                })),
+                received_date: formatDateToISO(data.received_date),
+                description: data.description || "Received items for Purchase order",
+            };
 
-        //     await fetch(InsertAPIURL, {
-        //         method: 'POST',
-        //         headers: headers,
-        //         body: JSON.stringify(transformedData),
-        //     })
-        //         .then(response => response.json())
-        //         .then(response => {
-        //             console.log(response);
-        //             setIsLoading(false);
-        //             if (response.success) {
-        //                 setIsLoading(false);
-        //                 toast.success(response.message);
-        //                 console.log("API", result.success);
-        //                 navigate("/purchase-receives");
-        //             } else {
-        //                 setIsLoading(false);
-        //                 toast.error(response.error.message);
-        //             }
-        //         }).catch(error => {
-        //             setIsLoading(false);
-        //             toast.error(error);
-        //         });
-        // }, 3000);
+
+            await fetch(InsertAPIURL, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(transformedData),
+            })
+                .then(response => response.json())
+                .then(response => {
+                    console.log(response);
+                    setIsLoading(false);
+                    if (response.success) {
+                        setIsLoading(false);
+                        toast.success(response.message);
+                        // console.log("API", result.success);
+                        navigate("/purchase-receives");
+                    } else {
+                        setIsLoading(false);
+                        toast.error(response.message);
+                    }
+                }).catch(error => {
+                    setIsLoading(false);
+                    toast.error(error.message);
+                });
+        }, 3000);
     };
 
     const [itemErrors, setItemErrors] = useState({});
@@ -396,7 +398,7 @@ const EditPurchaseReceive = () => {
                         })
                     ).min(1, 'At least one item is required'),
                 })}
-                onSubmit={handleAddPR}
+                onSubmit={handleEditPR}
             >
                 {({ values, handleChange, handleSubmit, setFieldValue, validateField, errors, touched }) => {
                     const handlePOChange = async (event) => {
