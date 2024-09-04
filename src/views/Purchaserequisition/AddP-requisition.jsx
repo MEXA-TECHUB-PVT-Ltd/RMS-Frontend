@@ -452,17 +452,7 @@ const AddPurchaseRequistion = () => {
                                             onChange={handleChange}
                                         />
                                         <ErrorMessage name="shipment_pre" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div>
-                                    <div>
-                                        <AppInput
-                                            type="text"
-                                            label="Shipment Address"
-                                            name="shipment_address"
-                                            value={values.shipment_address}
-                                            onChange={handleChange}
-                                        />
-                                        <ErrorMessage name="shipment_address" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div>
+                                    </div> 
 
                                     <div >
                                         <AppMultiSelect
@@ -484,6 +474,17 @@ const AddPurchaseRequistion = () => {
                                                 {/* {console.log(values.items && values.items)} */}
                                             </>
                                         )}
+                                    </div>
+
+                                    <div>
+                                        <AppInput
+                                            type="textarea"
+                                            label="Shipment Address"
+                                            name="shipment_address"
+                                            value={values.shipment_address}
+                                            onChange={handleChange}
+                                        />
+                                        <ErrorMessage name="shipment_address" component="div" style={{ color: "red", fontSize: "13px" }} />
                                     </div>
 
                                     <div>

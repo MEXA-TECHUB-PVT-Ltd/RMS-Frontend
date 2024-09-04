@@ -74,7 +74,7 @@ const Purchaseorder = () => {
                     backgroundColor: row.status === "DRAFT" ? 'darkblue' :
                         row.status === "ISSUED" ? 'purple' :
                             row.status === "FULLY DELIVERED" ? 'green' :
-                                row.status === "CANCELLED" ? 'orange' :
+                                row.status === "CANCELLED" ? 'red' :
                                     'yellow',
                     padding: 8,
                     color: "white",
@@ -156,7 +156,7 @@ const Purchaseorder = () => {
 
     const onCancel = () => {
 
-        console.log("Cnacel cancel",currentId);
+        console.log("Cnacel cancel", currentId);
 
         setLoading(true);
         setTimeout(() => {
@@ -183,7 +183,7 @@ const Purchaseorder = () => {
                         setCancelModal(false)
                         setLoading(false);
                         toast.success(response.message);
-                        setDeleteModal(false);
+                        setCancelModal(false);
                         dispatch(
                             getPOs({
                                 currentPage,
@@ -194,7 +194,7 @@ const Purchaseorder = () => {
                     } else {
                         setLoading(false);
                         setCancelModal(false)
-                        toast.error(response.message); 
+                        toast.error(response.message);
                     }
                 })
                 .catch(error => {
@@ -355,7 +355,7 @@ const Purchaseorder = () => {
                 // buttonIcon={FaPlus}
                 viewType={viewType}
                 onViewType={setViewType}
-            // onSearch={handleSearch}
+                onSearch={handleSearch}
             // onAddButtonClick={() => navigate("/add-item")}
             />
 
@@ -399,7 +399,7 @@ const Purchaseorder = () => {
                                                 backgroundColor: item.status === "DRAFT" ? 'darkblue' :
                                                     item.status === "ISSUED" ? 'purple' :
                                                         item.status === "FULLY DELIVERED" ? 'green' :
-                                                            item.status === "CANCELLED" ? 'orange' :
+                                                            item.status === "CANCELLED" ? 'red' :
                                                                 'yellow',
                                                 padding: 6,
                                                 color: "white",

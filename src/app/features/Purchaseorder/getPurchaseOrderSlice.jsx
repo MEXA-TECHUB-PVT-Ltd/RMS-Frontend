@@ -8,7 +8,7 @@ export const getPOs = createAsyncThunk(
     async ({ currentPage = 1, perPage = 10, search = '' }, { rejectWithValue }) => {
         try {
             const { data } = await axios.get(`${API_URL}/purchase/order/get/purchase/order`, {
-                params: { currentPage, perPage, name: search },
+                params: { currentPage, perPage, purchase_order_number: search },
             });
             return data;
         } catch (error) {

@@ -101,9 +101,9 @@ const Purchasereceive = () => {
                         className="text-eye_black dark:text-eye_white flex-none"
                         onClick={() => navigate(`/purchase-receive_details?pr_id=${row.id}`)}
                     />
-
+                    {console.log("posOptions", posOptions)}
                     {posOptions?.map((item) => (
-                        item.status == "FULLY DELIVERED" && "CANCELLED" ? <></>
+                        item?.status === "CANCELLED" ? <></>
                             :
                             <FaEdit
                                 size={20}
@@ -148,54 +148,6 @@ const Purchasereceive = () => {
 
             fetch(InsertAPIURL, {
                 method: 'DELETE',
-                headers: headers,
-                body: JSON.stringify(Data),
-            })
-                .then(response => response.json())
-                .then(response => {
-                    console.log(response);
-                    setLoading(false);
-                    if (response.success) {
-                        setDeleteModal
-                        setLoading(false);
-                        toast.success(response.message);
-                        setDeleteModal(false);
-                        dispatch(
-                            getPR({
-                                currentPage,
-                                perPage: rowsPerPage,
-                                search: searchQuery, // Include searchQuery in the request
-                            })
-                        );
-                    } else {
-                        setLoading(false);
-                        toast.error(response.message);
-                        setDeleteModal(false);
-                    }
-                })
-                .catch(error => {
-                    setLoading(false);
-                    toast.error(error.message);
-                });
-        }, 3000);
-
-    }
-
-    const sendtovendor = (row) => {
-        setLoading(true);
-        setTimeout(() => {
-            const InsertAPIURL = `${API_URL}/purchase/order/send/vendor?purchase_order_id=${row?.purchase_order_id}`;
-            const headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            };
-
-            var Data = {
-                "vendorIds": row?.vendors_ids
-            }
-
-            fetch(InsertAPIURL, {
-                method: 'PUT',
                 headers: headers,
                 body: JSON.stringify(Data),
             })
@@ -287,7 +239,7 @@ const Purchasereceive = () => {
                 // buttonIcon={FaPlus}
                 viewType={viewType}
                 onViewType={setViewType}
-                // onSearch={handleSearch}
+                onSearch={handleSearch}
                 onAddButtonClick={() => navigate("/add-purchase-receives")}
             />
 

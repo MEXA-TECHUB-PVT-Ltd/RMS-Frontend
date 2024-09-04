@@ -253,7 +253,7 @@ const AddPurchaseReceive = () => {
                     if (response.success) {
                         setIsLoading(false);
                         toast.success(response.message);
-                        console.log("API", result.success);
+                        // console.log("API", result.success);
                         navigate("/purchase-receives");
                     } else {
                         setIsLoading(false);

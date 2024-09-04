@@ -5,11 +5,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export const getPRs = createAsyncThunk(
     "pr/getPRs", // Ensure this matches your slice name and action
-    async ({ page = 1, limit = 10  }, { rejectWithValue }) => {
+    async ({ currentPage = 1, perPage = 10, search = '' }, { rejectWithValue }) => {
         try {
             const { data } = await axios.get(`${API_URL}/purchase-requisition`, {
-                params: { page, limit},
-            }); 
+                params: { currentPage, perPage, purchase_order_number: search },
+            });
             return data;
         } catch (error) {
             console.log(error);
@@ -21,7 +21,7 @@ export const getPRs = createAsyncThunk(
 export const getPRDetails = createAsyncThunk(
     "pr/getpr",
     async ({ id }, { rejectWithValue }) => {
-        try { 
+        try {
             const { data } = await axios.get(`${API_URL}/purchase-requisition/${id}`);
             return data;
         } catch (error) {
@@ -39,7 +39,7 @@ const initialState = {
     pagination: {
         totalItems: 0,
         totalPages: 0,
-        page: 1,
+        currentPage: 1,
         limit: 10,
     },
     message: null,
@@ -63,8 +63,8 @@ const getPRSlice = createSlice({
                 state.pagination = {
                     totalItems: action.payload.result.count,
                     totalPages: Math.ceil(action.payload.result.count / state.pagination.limit),
-                    page: action.meta.arg.page,
-                    limit: action.meta.arg.limit,
+                    currentPage: action.meta.arg.currentPage,
+                    limit: action.meta.arg.perPage,
                 };
                 state.message = action.payload.message;
                 state.success = action.payload.success;
@@ -76,7 +76,7 @@ const getPRSlice = createSlice({
                 state.message = action.payload.message || action.payload.error.message;
                 state.success = action.payload.success;
             })
-            
+
             .addCase(getPRDetails.pending, (state, action) => {
                 state.isLoading = true;
             })

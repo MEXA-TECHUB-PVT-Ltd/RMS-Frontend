@@ -185,11 +185,29 @@ const EditItem = () => {
                 vendor_ids: data.vendor,
                 description: data.service_description
             };
+        } else if (data.unit_category == "quantity") {
+            Data = {
+                type: data.item_type,
+                name: data.name,
+                product_category: data.category,
+                unit_category: data.unit_category,
+                quantity_units: data.quantity_unit,// "packs of bread",
+                product_units: data.units,
+                usage_unit: data.usage_unit,
+                product_catalog: data.catalog,
+                vendor_ids: data.vendor,
+                image: cnic_back_img ? (cnic_back_img instanceof File ? response.data.url : cnic_back_img.preview) : null,
+                stock_in_hand: transformToNull(data.opening_stock),
+                opening_stock_rate: transformToNull(data.rate_per_unit),
+                reorder_unit: transformToNull(data.re_order_level),
+                inventory_description: transformToNull(data.description),
+            };
         } else {
             Data = {
                 type: data.item_type,
                 name: data.name,
                 product_category: data.category,
+                quantity_units: data.quantity_unit,
                 product_units: data.units,
                 unit_category: data.unit_category,
                 usage_unit: data.usage_unit,
@@ -335,7 +353,8 @@ const EditItem = () => {
         name: Yup.string().required("Name is required"),
         vendor: Yup.array()
             .of(Yup.string().required('Vendor is required'))
-            .min(1, 'At least one vendor must be selected'),
+            .min(1, 'At least one vendor must be selected')
+            .max(10, "Vendors cann't more than 10"),
         service_description: Yup.string().required("Description is required")
     });
 
@@ -346,11 +365,15 @@ const EditItem = () => {
         unit_category: Yup.string().required("Unit category is required"),
         units: Yup.string().required("Unit is required"),
         usage_unit: Yup.string().required("Usage unit is required"),
+
+        quantity_unit: Yup.string().required("Unit is required"),
+
         catalog: Yup.string().required("Catalog is required"),
         // vendor: Yup.string().required("Vendor is required"),
         vendor: Yup.array()
             .of(Yup.string().required('Vendor is required'))
-            .min(1, 'At least one vendor must be selected'),
+            .min(1, 'At least one vendor must be selected')
+            .max(10, "Vendors cann't more than 10"),
         opening_stock: Yup.string().nullable(),
         rate_per_unit: Yup.string().nullable(),
         re_order_level: Yup.string().nullable(),
@@ -394,7 +417,9 @@ const EditItem = () => {
                 unit_category: itemdetails?.unit_category ?? "",
                 units: unit?.value || itemdetails?.product_units || "",  // Use .value to ensure the ID is passed
                 usage_unit: usage_unit?.value || itemdetails?.usage_unit || "",
-                // units: unit?.id ?? "",
+
+                quantity_unit: itemdetails?.quantity_units ?? "",
+
                 // usage_unit: usage_unit?.id ?? "",
                 catalog: catalog?.value ?? "",
                 // vendor: vendor?.id ?? "",
@@ -431,51 +456,53 @@ const EditItem = () => {
                         </div>
 
                         {values.item_type === "SERVICE" ?
-                            <div className="modal-item-container">
-                                <div>
-                                    <AppSelect
-                                        label="Item Type"
-                                        name="item_type"
-                                        value={values.item_type}
-                                        options={itemOptions}
-                                        onChange={handleCustomChange("item_type")}
-                                    />
-                                    <ErrorMessage name="item_type" />
-                                </div>
+                            <div className="pl-5 pr-5 container mx-auto">
+                                <div className="grid grid-cols-12 gap-4">
+                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                        <AppSelect
+                                            label="Item Type"
+                                            name="item_type"
+                                            value={values.item_type}
+                                            options={itemOptions}
+                                            onChange={handleCustomChange("item_type")}
+                                        />
+                                        <ErrorMessage name="item_type" />
+                                    </div>
 
-                                <div>
-                                    <AppInput
-                                        type="text"
-                                        label="Name"
-                                        name="name"
-                                        value={values.name}
-                                        onChange={handleCustomChange("name")}
-                                    />
-                                    <ErrorMessage name="name" />
-                                </div>
+                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                        <AppInput
+                                            type="text"
+                                            label="Name"
+                                            name="name"
+                                            value={values.name}
+                                            onChange={handleCustomChange("name")}
+                                        />
+                                        <ErrorMessage name="name" />
+                                    </div>
 
-                                <div>
-                                    <AppMultiSelect
-                                        label="Preferred Vendor"
-                                        name="vendor"
-                                        value={values.vendor} // Should be an array for isMulti
-                                        options={vendorOptions}
-                                        onChange={(value) => setFieldValue('vendor', value)}
-                                        isMulti={true} // Enable multi-select
-                                    />
-                                    <ErrorMessage name="vendor" />
-                                </div>
+                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                        <AppMultiSelect
+                                            label="Preferred Vendor"
+                                            name="vendor"
+                                            value={values.vendor} // Should be an array for isMulti
+                                            options={vendorOptions}
+                                            onChange={(value) => setFieldValue('vendor', value)}
+                                            isMulti={true} // Enable multi-select 
+                                        />
+                                        <ErrorMessage name="vendor" />
+                                    </div>
 
-                                <div>
-                                    <AppInput
-                                        type="textarea"
-                                        rows={4}
-                                        label="Description"
-                                        name="service_description"
-                                        value={values.service_description}
-                                        onChange={handleCustomChange("service_description")}
-                                    />
-                                    <ErrorMessage name="service_description" />
+                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                        <AppInput
+                                            type="textarea"
+                                            rows={4}
+                                            label="Description"
+                                            name="service_description"
+                                            value={values.service_description}
+                                            onChange={handleCustomChange("service_description")}
+                                        />
+                                        <ErrorMessage name="service_description" />
+                                    </div>
                                 </div>
                             </div>
                             :
@@ -530,8 +557,19 @@ const EditItem = () => {
                                             <>
                                                 <div>
                                                     <AppInput
+                                                        type="text"
+                                                        label="Quantity Unit"
+                                                        name="quantity_unit"
+                                                        value={values.quantity_unit}
+                                                        onChange={handleCustomChange("quantity_unit")}
+                                                    />
+                                                    <ErrorMessage name="quantity_unit" />
+                                                </div>
+
+                                                <div>
+                                                    <AppInput
                                                         type="number"
-                                                        label="Units"
+                                                        label="Quantity"
                                                         name="units"
                                                         value={values.units}
                                                         onChange={handleCustomChange("units")}
@@ -542,7 +580,7 @@ const EditItem = () => {
                                                 <div>
                                                     <AppInput
                                                         type="number"
-                                                        label="Usage Units"
+                                                        label="Usage Quantity"
                                                         name="usage_unit"
                                                         value={values.usage_unit}
                                                         onChange={handleCustomChange("usage_unit")}
@@ -575,31 +613,36 @@ const EditItem = () => {
                                                 </div>
                                             </>
                                         )}
-
-                                        <div>
-                                            <AppSelect
-                                                label="Product Catalog"
-                                                name="catalog"
-                                                value={values.catalog}
-                                                options={catalogOptions}
-                                                onChange={handleCustomChange("catalog")}
-                                            />
-                                            <ErrorMessage name="catalog" />
-                                        </div>
-
-                                        <div>
-                                            <AppMultiSelect
-                                                label="Preferred Vendor"
-                                                name="vendor"
-                                                value={values.vendor} // Should be an array for isMulti
-                                                options={vendorOptions}
-                                                onChange={(value) => setFieldValue('vendor', value)}
-                                                isMulti={true} // Enable multi-select
-                                            />
-                                            <ErrorMessage name="vendor" />
-                                        </div>
                                     </div>
 
+                                    <div className="pl-5 pr-5 container mx-auto">
+                                        <div className="grid grid-cols-12 gap-4">
+
+                                            <div className="col-span-12 sm:col-span-4 md:col-span-4">
+                                                <AppSelect
+                                                    label="Product Catalog"
+                                                    name="catalog"
+                                                    value={values.catalog}
+                                                    options={catalogOptions}
+                                                    onChange={handleCustomChange("catalog")}
+                                                />
+                                                <ErrorMessage name="catalog" />
+                                            </div>
+
+
+                                            <div className="col-span-12 sm:col-span-8 md:col-span-8" >
+                                                <AppMultiSelect
+                                                    label="Preferred Vendor"
+                                                    name="vendor"
+                                                    value={values.vendor} // Should be an array for isMulti
+                                                    options={vendorOptions}
+                                                    onChange={(value) => setFieldValue('vendor', value)}
+                                                    isMulti={true} // Enable multi-select
+                                                />
+                                                <ErrorMessage name="vendor" />
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div className="modal-item-container">
                                         {itemdetails?.image == null || undefined ?
