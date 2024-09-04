@@ -354,34 +354,46 @@ const EditItem = () => {
         vendor: Yup.array()
             .of(Yup.string().required('Vendor is required'))
             .min(1, 'At least one vendor must be selected')
-            .max(10, "Vendors cann't more than 10"),
+            .max(10, "Vendors can't be more than 10"),
         service_description: Yup.string().required("Description is required")
     });
 
-    const validationSchemaProduct = Yup.object().shape({
+    const baseProductValidationSchema = Yup.object().shape({
         item_type: Yup.string().required("Item type is required"),
         category: Yup.string().required("Category is required"),
         name: Yup.string().required("Name is required"),
         unit_category: Yup.string().required("Unit category is required"),
         units: Yup.string().required("Unit is required"),
         usage_unit: Yup.string().required("Usage unit is required"),
-
-        quantity_unit: Yup.string().required("Unit is required"),
-
         catalog: Yup.string().required("Catalog is required"),
-        // vendor: Yup.string().required("Vendor is required"),
         vendor: Yup.array()
             .of(Yup.string().required('Vendor is required'))
             .min(1, 'At least one vendor must be selected')
-            .max(10, "Vendors cann't more than 10"),
+            .max(10, "Vendors can't be more than 10"),
         opening_stock: Yup.string().nullable(),
         rate_per_unit: Yup.string().nullable(),
         re_order_level: Yup.string().nullable(),
         description: Yup.string().nullable()
     });
 
-    const getValidationSchema = (itemType) => {
-        return itemType === 'SERVICE' ? validationSchemaService : validationSchemaProduct;
+
+    const getValidationSchema = (itemType, unitCategory) => {
+        if (itemType === 'SERVICE') {
+            return validationSchemaService;
+        } else if (itemType === 'PRODUCT') {
+            if (unitCategory === 'quantity') {
+                // Add additional validation for quantity_unit if unitCategory is "quantity"
+                return baseProductValidationSchema.shape({
+                    quantity_unit: Yup.string().required("Quantity unit is required")
+                });
+            } else {
+                // No additional validation for quantity_unit
+                return baseProductValidationSchema.shape({
+                    quantity_unit: Yup.string().notRequired()
+                });
+            }
+        }
+        return baseProductValidationSchema; // Default case if needed
     };
 
     useEffect(() => {
@@ -432,7 +444,7 @@ const EditItem = () => {
             }
             }
             enableReinitialize={true}
-            validationSchema={Yup.lazy(values => getValidationSchema(values.item_type))}
+            validationSchema={Yup.lazy(values => getValidationSchema(values.item_type, values.unit_category))}
             onSubmit={handleUpdateItem}
         >
             {({ values, handleChange, handleSubmit, setFieldValue, isSubmitting }) => {
