@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import DataTable from "../../components/table/DataTable";
-import { FaEdit, FaEye, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaEye, FaTrash, FaPlus, FaWindowClose } from "react-icons/fa";
 import Card from "../../components/card/Card";
 import { useDispatch, useSelector } from "react-redux";
 import { getPOs } from "../../app/features/Purchaseorder/getPurchaseOrderSlice";
@@ -27,6 +27,7 @@ const Purchaseorder = () => {
     const [viewType, setViewType] = useState("");
     const [currentId, setCurrentId] = useState(null);
     const [deleteModal, setDeleteModal] = useState(false);
+    const [cancelModal, setCancelModal] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const { textColor } = useSelector((state) => state.theme);
@@ -73,7 +74,7 @@ const Purchaseorder = () => {
                     backgroundColor: row.status === "DRAFT" ? 'darkblue' :
                         row.status === "ISSUED" ? 'purple' :
                             row.status === "FULLY DELIVERED" ? 'green' :
-                                row.status === "CANCELLED" ? 'orange' :
+                                row.status === "CANCELLED" ? 'red' :
                                     'yellow',
                     padding: 8,
                     color: "white",
@@ -110,6 +111,16 @@ const Purchaseorder = () => {
                         className="text-eye_black dark:text-eye_white flex-none"
                         onClick={() => navigate(`/puchase-order-details?po_id=${row.purchase_order_id}`)}
                     />
+
+                    <FaWindowClose
+                        size={15}
+                        className="text-red-600 flex-none"
+                        onClick={() => {
+                            setCurrentId(row.purchase_order_id);
+                            setCancelModal(true);
+                        }}
+                    />
+
                     {row.status === "DRAFT" && (
                         <FaTrash
                             size={15}
@@ -143,6 +154,56 @@ const Purchaseorder = () => {
         },
     ];
 
+    const onCancel = () => {
+
+        console.log("Cnacel cancel", currentId);
+
+        setLoading(true);
+        setTimeout(() => {
+            const InsertAPIURL = `${API_URL}/purchase/order/cancel`;
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            };
+
+            var Data = {
+                purchase_order_id: currentId
+            }
+
+            fetch(InsertAPIURL, {
+                method: 'DELETE',
+                headers: headers,
+                body: JSON.stringify(Data),
+            })
+                .then(response => response.json())
+                .then(response => {
+                    console.log(response);
+                    setLoading(false);
+                    if (response.success) {
+                        setCancelModal(false)
+                        setLoading(false);
+                        toast.success(response.message);
+                        setCancelModal(false);
+                        dispatch(
+                            getPOs({
+                                currentPage,
+                                perPage: rowsPerPage,
+                                search: searchQuery, // Include searchQuery in the request
+                            })
+                        );
+                    } else {
+                        setLoading(false);
+                        setCancelModal(false)
+                        toast.error(response.message);
+                    }
+                })
+                .catch(error => {
+                    setLoading(false);
+                    toast.error(error.message);
+                });
+        }, 3000);
+
+    }
 
     const onDelete = () => {
 
@@ -294,7 +355,7 @@ const Purchaseorder = () => {
                 // buttonIcon={FaPlus}
                 viewType={viewType}
                 onViewType={setViewType}
-            // onSearch={handleSearch}
+                onSearch={handleSearch}
             // onAddButtonClick={() => navigate("/add-item")}
             />
 
@@ -338,7 +399,7 @@ const Purchaseorder = () => {
                                                 backgroundColor: item.status === "DRAFT" ? 'darkblue' :
                                                     item.status === "ISSUED" ? 'purple' :
                                                         item.status === "FULLY DELIVERED" ? 'green' :
-                                                            item.status === "CANCELLED" ? 'orange' :
+                                                            item.status === "CANCELLED" ? 'red' :
                                                                 'yellow',
                                                 padding: 6,
                                                 color: "white",
@@ -377,6 +438,31 @@ const Purchaseorder = () => {
                     />
                 </div>
             </Modal>
+
+            <Modal
+                title={"Cancel Purchase Order"}
+                size="sm"
+                isOpen={cancelModal}
+                onClose={() => setCancelModal(false)}
+            >
+                <h1 className="flex-start text-base font-semibold">
+                    Are you sure want to cancel this PO?{" "}
+                </h1>
+
+                <div className="flex-end gap-3 mt-5">
+                    <Button
+                        title={"Cancel"}
+                        onClick={() => setCancelModal(false)}
+                        color={"bg-red-500"}
+                    />
+                    <Button
+                        title={"Yes, sure"}
+                        onClick={loading ? "" : () => onCancel(currentId)}
+                        spinner={loading ? <Spinner size="sm" /> : null}
+                    />
+                </div>
+            </Modal>
+
         </div>
     );
 };

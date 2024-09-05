@@ -60,7 +60,7 @@ const PurchaseorderDetails = () => {
                                             backgroundColor: podetail?.result?.status === "DRAFT" ? 'darkblue' :
                                                 podetail?.result?.status === "ISSUED" ? 'purple' :
                                                     podetail?.result?.status === "FULLY DELIVERED" ? 'green' :
-                                                        podetail?.result?.status === "CANCELLED" ? 'orange' :
+                                                        podetail?.result?.status === "CANCELLED" ? 'red' :
                                                             'yellow',
                                             padding: 6,
                                             color: "white",

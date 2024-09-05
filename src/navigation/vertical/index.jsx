@@ -19,13 +19,13 @@ export default [
     title: "Items",
     path: "/items",
     icon: <FaProductHunt size={21} />,
+  },
+  {
+    id: "purchaserequisition",
+    title: "Purchase Requisition",
+    path: "/puchase-requisition",
+    icon: <FaAlipay size={18} />,
     submenu: [
-      {
-        id: "purchaserequisition",
-        title: "Purchase Requisition",
-        path: "/puchase-requisition",
-        icon: <FaAlipay size={18} />,
-      },
       {
         id: "purchaseorder",
         title: "Purchase Order",
@@ -37,7 +37,7 @@ export default [
         title: "Purchase Receives",
         path: "/purchase-receives",
         icon: <FaInvision size={18} />,
-      },  
+      },
     ],
   },
 ];

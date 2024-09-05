@@ -26,11 +26,14 @@ const Header = ({
 
       <div className="header-items">
         {window.location.href == `${FE_URL}puchase-order` ?
-          <GridButton
-            onGridView={() => onViewType("GRID")}
-            onListView={() => onViewType("")}
-            grid={viewType === "GRID"}
-          />
+          <>
+            <SearchBar onChange={handleSearch} field="title" />
+            <GridButton
+              onGridView={() => onViewType("GRID")}
+              onListView={() => onViewType("")}
+              grid={viewType === "GRID"}
+            />
+          </>
           :
           window.location.href == `${FE_URL}puchase-requisition` ?
             <>

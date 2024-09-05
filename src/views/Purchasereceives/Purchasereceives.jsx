@@ -32,11 +32,7 @@ const Purchasereceive = () => {
     const { textColor } = useSelector((state) => state.theme);
     // const { isLoading } = useSelector((state) => state.deleteVendor); 
 
-    const rows = [
-        { vendor: "John Doe", order_number: "1234567", delivery_date: "29-07-2024", status: "cancel" },
-        { vendor: "Harry Pottar", order_number: "1234567", delivery_date: "29-07-2024", status: "cancel" },
-        { vendor: "Harry Pottar", order_number: "1234567", delivery_date: "29-07-2024", status: "cancel" }
-    ]
+    const [posOptions, setPOsOptions] = useState([]);
 
     const prColumns = [
         // {
@@ -103,16 +99,27 @@ const Purchasereceive = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
-                    // onClick={() => navigate(`/puchase-order-details?po_id=${row.purchase_order_id}`)}
+                        onClick={() => navigate(`/purchase-receive_details?pr_id=${row.id}`)}
                     />
-                    <FaTrash
+                    {console.log("posOptions", posOptions)}
+                    {posOptions?.map((item) => (
+                        item?.status === "CANCELLED" ? <></>
+                            :
+                            <FaEdit
+                                size={20}
+                                className={`${textColor}`}
+                                onClick={() => navigate(`/edit-purchase-receive?pr_id=${row.id}`)}
+                            />
+                    ))}
+
+                    {/* <FaTrash
                         size={15}
                         className="text-red-600 flex-none"
-                    // onClick={() => {
-                    //     setCurrentId(row.purchase_order_id);
-                    //     setDeleteModal(true);
-                    // }}
-                    />
+                        onClick={() => {
+                            setCurrentId(row);
+                            setDeleteModal(true);
+                        }}
+                    /> */}
                 </div >
             ),
             style: {
@@ -122,70 +129,25 @@ const Purchasereceive = () => {
     ];
 
 
-    const onDelete = () => {
+    const onCancel = () => {
 
+        console.log("currentId", currentId.purchase_order_id);
+        console.log("Item IDs", currentId?.items?.map((item) => item?.item_id));
         setLoading(true);
         setTimeout(() => {
-            const InsertAPIURL = `${API_URL}/purchase/order/delete?purchase_order_id=${currentId}`;
-            const headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            };
-
-            fetch(InsertAPIURL, {
-                method: 'DELETE',
-                headers: headers,
-                body: JSON.stringify(),
-            })
-                .then(response => response.json())
-                .then(response => {
-                    console.log(response);
-                    setLoading(false);
-                    if (response.success) {
-                        setDeleteModal
-                        setLoading(false);
-                        toast.success(response.message);
-                        setDeleteModal(false);
-                        dispatch(
-                            getPR({
-                                currentPage,
-                                perPage: rowsPerPage,
-                                search: searchQuery, // Include searchQuery in the request
-                            })
-                        );
-                    } else {
-                        setLoading(false);
-                        toast.error(response.message);
-                        setDeleteModal(false);
-                    }
-                })
-                .catch(error => {
-                    setLoading(false);
-                    toast.error(error.message);
-                });
-        }, 3000);
-
-    }
-
-    const sendtovendor = (row) => {
-
-        // console.log(row);
-        // console.log("purchase_requisition_id", row.purchase_requisition_id);
-        // console.log("vendor ids", row?.vendors_ids);
-        setLoading(true);
-        setTimeout(() => {
-            const InsertAPIURL = `${API_URL}/purchase/order/send/vendor?purchase_order_id=${row?.purchase_order_id}`;
+            const InsertAPIURL = `${API_URL}/purchase/receives/cancel`;
             const headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             };
 
             var Data = {
-                "vendorIds": row?.vendors_ids
+                purchase_order_id: currentId?.purchase_order_id,
+                purchase_item_ids: currentId?.items?.map((item) => item?.item_id)
             }
 
             fetch(InsertAPIURL, {
-                method: 'PUT',
+                method: 'DELETE',
                 headers: headers,
                 body: JSON.stringify(Data),
             })
@@ -243,6 +205,28 @@ const Purchasereceive = () => {
         setCurrentPage(1); // Reset to first page on search
     };
 
+    const fetchPOs = async (value) => {
+        console.log("category", value);
+        try {
+            const response = await fetch(`${API_URL}/purchase/order/get/purchase/order`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log(data);
+
+            setPOsOptions(data?.result?.orders);
+            console.log("formattedOrders", data?.result?.orders);
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+
+
+    useEffect(() => {
+        fetchPOs();
+    }, []);
+
     useEffect(() => {
         dispatch(getPR({ currentPage, perPage: rowsPerPage, search: searchQuery }));
     }, [dispatch, currentPage, rowsPerPage, searchQuery]);
@@ -255,7 +239,7 @@ const Purchasereceive = () => {
                 // buttonIcon={FaPlus}
                 viewType={viewType}
                 onViewType={setViewType}
-                // onSearch={handleSearch}
+                onSearch={handleSearch}
                 onAddButtonClick={() => navigate("/add-purchase-receives")}
             />
 
@@ -316,13 +300,13 @@ const Purchasereceive = () => {
             )}
 
             <Modal
-                title={"Delete Purchase Order"}
+                title={"Cancel Purchase Order"}
                 size="sm"
                 isOpen={deleteModal}
                 onClose={() => setDeleteModal(false)}
             >
                 <h1 className="flex-start text-base font-semibold">
-                    Are you sure want to delete this PO?{" "}
+                    Are you sure want to cancel this PO?{" "}
                 </h1>
 
                 <div className="flex-end gap-3 mt-5">
@@ -333,7 +317,7 @@ const Purchasereceive = () => {
                     />
                     <Button
                         title={"Delete"}
-                        onClick={loading ? "" : () => onDelete(currentId)}
+                        onClick={loading ? "" : () => onCancel(currentId)}
                         spinner={loading ? <Spinner size="sm" /> : null}
                     />
                 </div>
