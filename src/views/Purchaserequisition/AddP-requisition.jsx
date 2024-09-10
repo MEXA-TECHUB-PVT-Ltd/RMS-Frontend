@@ -452,7 +452,7 @@ const AddPurchaseRequistion = () => {
                                             onChange={handleChange}
                                         />
                                         <ErrorMessage name="shipment_pre" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div> 
+                                    </div>
 
                                     <div >
                                         <AppMultiSelect

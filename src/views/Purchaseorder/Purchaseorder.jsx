@@ -67,8 +67,7 @@ const Purchaseorder = () => {
         {
             name: "Status",
             selector: (row) => (
-                <div style={{
-
+                <div style={{ 
                     fontWeight: "bold",
                     borderRadius: "50px",
                     backgroundColor: row.status === "DRAFT" ? 'darkblue' :
