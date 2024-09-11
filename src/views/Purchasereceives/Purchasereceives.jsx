@@ -260,37 +260,27 @@ const Purchasereceive = () => {
                         />
                     ) : (
                         <div className="card-view">
-                            {po.map((item) => {
+                            {purchase_receives.map((item) => {
                                 return (
                                     <Card key={item?.id}>
-                                        <CardItem title={"Vendor"} value={item?.purchase_items[0]?.preferred_vendors[0]?.first_name == null ? "-" : `${item?.purchase_items[0]?.preferred_vendors[0]?.first_name} ${item?.purchase_items[0]?.preferred_vendors[0]?.last_name}`} />
-                                        <CardItem title={"Order Number"} value={item?.purchase_order_number} />
+                                        <CardItem title={"Purchase Number"} value={item.purchase_received_number == null || undefined ? "-" : item.purchase_received_number} />
+                                        <CardItem title={"Vendor"} value={item.items[0]?.vendor_details?.vendor_display_name == null || undefined ? "-" : item?.items[0]?.vendor_details?.vendor_display_name} />
                                         <CardItem
-                                            title={"Delivery Date"}
-                                            value={item?.required_date.slice(0, 10)}
+                                            title={"Total Quantity"}
+                                            value={item.items[0]?.total_quantity == null || undefined ? "-" : item?.items[0]?.total_quantity}
                                         />
                                         <CardItem
-                                            title={"Required Quantity"}
-                                            value={item?.purchase_items[0]?.required_quantity == null ? "-" : item?.purchase_items[0]?.required_quantity}
+                                            title={"Quantity Received"}
+                                            value={item?.items[0]?.quantity_received == null ? "-" : item?.items[0]?.quantity_received}
                                         />
-                                        <div className="card-item">
-                                            <div className="font-medium text-base text-sm text-black/60 dark:text-white/60">
-                                                Status
-                                            </div>
-                                            <h1 className="text-sm" style={{
-                                                fontWeight: "medium",
-                                                borderRadius: "40px",
-                                                backgroundColor: item.status === "DRAFT" ? 'darkblue' :
-                                                    item.status === "ISSUED" ? 'purple' :
-                                                        item.status === "FULLY DELIVERED" ? 'green' :
-                                                            item.status === "CANCELLED" ? 'orange' :
-                                                                'yellow',
-                                                padding: 6,
-                                                color: "white",
-                                                width: "100px",
-                                                textAlign: "center"
-                                            }}>{item?.status}</h1>
-                                        </div>
+                                        <CardItem
+                                            title={"Received Date"}
+                                            value={item?.received_date == null ? "-" : item?.received_date.slice(0, 10)}
+                                        />
+                                        <CardItem
+                                            title={"Total Cost"}
+                                            value={item?.items[0]?.total_cost == null ? "-" : <>{`$ ${item?.items[0]?.total_cost}`}</>}
+                                        />
                                     </Card>
                                 );
                             })}

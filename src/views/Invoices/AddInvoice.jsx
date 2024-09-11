@@ -42,8 +42,9 @@ const AddInvoice = () => {
             }
             const data = await response.json();
             console.log(data);
-            // const filteredPRs = data.result.purchase_receives.filter(order => order.pr_invoice ==);
-            const formattedPRs = data.result.purchase_receives.map((pr) => ({
+            const filteredPRs = data.result.purchase_receives.filter(order => order.pr_invoice === false || order.pr_invoice === "false");
+            console.log("filteredPRs", filteredPRs)
+            const formattedPRs = filteredPRs.map((pr) => ({
                 value: pr.id,
                 label: pr.purchase_received_number
             }));

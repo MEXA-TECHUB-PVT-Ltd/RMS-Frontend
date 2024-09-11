@@ -1,4 +1,4 @@
-import { FaRegUser, FaStoreAlt, FaProductHunt, FaViacoin, FaAlipay, FaInvision } from "react-icons/fa";
+import { FaRegUser, FaFileInvoice, FaStoreAlt, FaProductHunt, FaViacoin, FaAlipay, FaInvision, FaUtensils } from "react-icons/fa";
 import { MdOutlineDashboardCustomize } from "react-icons/md";
 
 export default [
@@ -42,8 +42,14 @@ export default [
         id: "invoices",
         title: "Invoices",
         path: "/invoices",
-        icon: <FaInvision size={18} />,
+        icon: <FaFileInvoice size={18} />,
       },
     ],
+  },
+  {
+    id: "recipes",
+    title: "Recipes",
+    path: "/recipes",
+    icon: <FaUtensils size={21} />,
   },
 ];
