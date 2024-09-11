@@ -18,7 +18,10 @@ import Purchasereceive from "../../views/Purchasereceives/Purchasereceives"
 import AddPurchaseReceive from "../../views/Purchasereceives/AddP-receive"
 import PurchaseReceiveDetail from "../../views/Purchasereceives/PurchaseReceiveDetail"
 import EditPurchaseReceive from "../../views/Purchasereceives/EditP-receive"
-//  EditPurchaseReceive
+import Invoice from "../../views/Invoices/Invoices"
+import AddInvoice from "../../views/Invoices/AddInvoice"
+import InvoiceDetails from "../../views/Invoices/InvoiceDetails"
+//  InvoiceDetails
 export default [
   {
     path: "/",
@@ -79,11 +82,23 @@ export default [
   {
     path: "/purchase-receive_details",
     element: <PurchaseReceiveDetail />,
-  }, 
+  },
   {
     path: "/edit-purchase-receive",
     element: <EditPurchaseReceive />,
-  },   
+  },
+  {
+    path: "/invoices",
+    element: <Invoice />,
+  },
+  {
+    path: "/add_invoice",
+    element: <AddInvoice />,
+  },
+  {
+    path: "/invoice_detail",
+    element: <InvoiceDetails />,
+  },
   {
     path: "/puchase-requisition",
     element: <Purchaserequisition />,

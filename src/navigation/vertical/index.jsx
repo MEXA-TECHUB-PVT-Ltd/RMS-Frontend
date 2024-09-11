@@ -38,6 +38,12 @@ export default [
         path: "/purchase-receives",
         icon: <FaInvision size={18} />,
       },
+      {
+        id: "invoices",
+        title: "Invoices",
+        path: "/invoices",
+        icon: <FaInvision size={18} />,
+      },
     ],
   },
 ];
