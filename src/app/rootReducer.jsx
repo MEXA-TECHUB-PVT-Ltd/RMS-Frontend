@@ -14,8 +14,9 @@ import getPRSlice from "./features/Purchaserequisition/getPurchaseRequisitionSli
 import getPRsSlice from "./features/Purchasereceives/getPurchaseReceivesSlice";
 
 import getInvoiceSlice from "./features/Invoices/getInvoiceSlice";
+import getRecipeSlice from "./features/Recipes/getRecipeSlice";
 
-// getInvoiceSlice
+// getRecipeSlice
 
 const rootReducer = combineReducers({
   theme: themeReducer,
@@ -30,7 +31,8 @@ const rootReducer = combineReducers({
   getPO: getPurchaseOrderSlice,
   getPR: getPRSlice,
   getPRs: getPRsSlice,
-  getInvoice: getInvoiceSlice
+  getInvoice: getInvoiceSlice,
+  getRecipe: getRecipeSlice
 });
 
 export default rootReducer;
