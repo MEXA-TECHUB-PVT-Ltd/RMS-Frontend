@@ -87,7 +87,7 @@ const AddPurchaseReceive = () => {
             console.log(error.message);
         }
     };
-    
+
 
     const [itemOptions, setItemOptions] = useState([]);
     const fetchItems = async (value) => {
@@ -153,6 +153,7 @@ const AddPurchaseReceive = () => {
 
             // Flatten the array to merge items from multiple vendors
             const flatItems = itemsDetailsArray.reduce((acc, details) => {
+                console.log("details", details);
                 details.items.forEach(item => {
                     acc.push({
                         vendor_id: item.vendor_id,

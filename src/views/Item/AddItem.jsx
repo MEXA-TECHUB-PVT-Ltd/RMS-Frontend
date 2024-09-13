@@ -390,8 +390,8 @@ const AddItem = () => {
             .of(Yup.string().required('Vendor is required'))
             .min(1, 'At least one vendor must be selected')
             .max(10, "Vendors can't be more than 10"),
-        opening_stock: Yup.string().nullable(),
-        rate_per_unit: Yup.string().nullable(),
+        opening_stock: Yup.string().required("Opening stock is required"),
+        rate_per_unit: Yup.string().required("Rate per unit is required"),
         re_order_level: Yup.string().nullable(),
         description: Yup.string().nullable()
     });
@@ -720,27 +720,29 @@ const AddItem = () => {
                                     <div className="modal-item-container">
                                         <div>
                                             <AppInput
-                                                type="text"
+                                                type="number"
                                                 label="Opening stock"
                                                 name="opening_stock"
                                                 value={values.opening_stock}
                                                 onChange={handleCustomChange("opening_stock")}
                                             />
+                                            <ErrorMessage name="opening_stock" />
                                         </div>
 
                                         <div>
                                             <AppInput
-                                                type="text"
+                                                type="number"
                                                 label="Opening stock rate per unit"
                                                 name="rate_per_unit"
                                                 value={values.rate_per_unit}
                                                 onChange={handleCustomChange("rate_per_unit")}
                                             />
+                                            <ErrorMessage name="rate_per_unit" />
                                         </div>
 
                                         <div>
                                             <AppInput
-                                                type="text"
+                                                type="number"
                                                 label="Re-order Level"
                                                 name="re_order_level"
                                                 value={values.re_order_level}

@@ -1,3 +1,4 @@
+// Header.jsx
 import React from "react";
 import SearchBar from "../form/SearchBar";
 import Button from "../form/Button";
@@ -12,6 +13,8 @@ const Header = ({
   buttonIcon,
   viewType,
   onViewType,
+  selectedItems,
+  onNewButtonClick, // Add this prop for the new button click handler
 }) => {
 
   const handleSearch = (query) => {
@@ -25,7 +28,7 @@ const Header = ({
       </h1>
 
       <div className="header-items">
-        {window.location.href == `${FE_URL}puchase-order` ?
+        {window.location.href === `${FE_URL}puchase-order` ? (
           <>
             <SearchBar onChange={handleSearch} field="title" />
             <GridButton
@@ -34,38 +37,47 @@ const Header = ({
               grid={viewType === "GRID"}
             />
           </>
-          :
-          window.location.href == `${FE_URL}puchase-requisition` ?
-            <>
-              <div className="header-buttons">
+        ) : window.location.href === `${FE_URL}puchase-requisition` ? (
+          <>
+            <div className="header-buttons">
+              {/* new button*/}
+              {selectedItems.length > 0 && (
                 <Button
-                  title={buttonTitle}
-                  icon={buttonIcon}
-                  onClick={onAddButtonClick}
+                  title="Convert To PO"
+                  icon={""}
+                  onClick={onNewButtonClick}
                 />
-                <GridButton
-                  onGridView={() => onViewType("GRID")}
-                  onListView={() => onViewType("")}
-                  grid={viewType === "GRID"}
-                />
-              </div>
-            </>
-            :
-            <>
-              <SearchBar onChange={handleSearch} field="title" />
-              <div className="header-buttons">
-                <Button
-                  title={buttonTitle}
-                  icon={buttonIcon}
-                  onClick={onAddButtonClick}
-                />
-                <GridButton
-                  onGridView={() => onViewType("GRID")}
-                  onListView={() => onViewType("")}
-                  grid={viewType === "GRID"}
-                />
-              </div>
-            </>}
+              )}
+
+              <Button
+                title={buttonTitle}
+                icon={buttonIcon}
+                onClick={onAddButtonClick}
+              />
+              <GridButton
+                onGridView={() => onViewType("GRID")}
+                onListView={() => onViewType("")}
+                grid={viewType === "GRID"}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <SearchBar onChange={handleSearch} field="title" />
+            <div className="header-buttons">
+              <Button
+                title={buttonTitle}
+                icon={buttonIcon}
+                onClick={onAddButtonClick}
+              />
+              <GridButton
+                onGridView={() => onViewType("GRID")}
+                onListView={() => onViewType("")}
+                grid={viewType === "GRID"}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

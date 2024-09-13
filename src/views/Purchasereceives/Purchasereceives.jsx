@@ -102,15 +102,13 @@ const Purchasereceive = () => {
                         onClick={() => navigate(`/purchase-receive_details?pr_id=${row.id}`)}
                     />
                     {console.log("posOptions", posOptions)}
-                    {posOptions?.map((item) => (
-                        item?.status === "CANCELLED" ? <></>
-                            :
-                            <FaEdit
-                                size={20}
-                                className={`${textColor}`}
-                                onClick={() => navigate(`/edit-purchase-receive?pr_id=${row.id}`)}
-                            />
-                    ))}
+                    {posOptions.every(item => item.status !== "CANCELLED") && (
+                        <FaEdit
+                            size={20}
+                            className={`${textColor}`}
+                            onClick={() => navigate(`/edit-purchase-receive?pr_id=${row.id}`)}
+                        />
+                    )}
 
                     {/* <FaTrash
                         size={15}

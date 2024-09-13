@@ -142,7 +142,7 @@ const PurchaseRequisitionDetail = () => {
                                                                     <>
                                                                         {item?.preffered_vendor?.map((v, idx) => (
                                                                             <div key={idx} className="card-item">
-                                                                                <h1 className="text-sm">{`${v?.vendor_display_name == null || undefined ? "-" : v?.vendor_display_name}`}</h1>
+                                                                                <h1 className="text-sm">{`${v?.vendor_first_name == null || undefined ? "-" : v?.vendor_first_name} ${v?.vendor_last_name == null || undefined ? "-" : v?.vendor_last_name}`}</h1>
                                                                             </div>
                                                                         ))}
                                                                     </>

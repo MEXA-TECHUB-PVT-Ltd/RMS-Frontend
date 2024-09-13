@@ -9,6 +9,7 @@ import CardHeader from "../../components/card/CardHeader";
 import { FaChevronLeft } from "react-icons/fa";
 import { Spinner } from "../../components/theme/Loader";
 import logo from "../../assets/item_image.png";
+import imagePlaceholder from "../../assets/item_image.png";
 
 const RecipeDetails = () => {
     const dispatch = useDispatch();
@@ -47,11 +48,13 @@ const RecipeDetails = () => {
                     <div className="container mx-auto">
                         <div className="grid grid-cols-12 gap-4">
 
-                            <div className="col-span-12 sm:col-span-7 md:col-span-7">
+                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
                                 <Card  >
                                     <CardHeader title={"Recipe Details"} />
                                     {recipedetails?.image == null || undefined || recipedetails.length == 0 ?
-                                        <img src={logo} alt="item" />
+                                        <div style={{ display: "flex", justifyContent: "center", alignContent: "center" }}>
+                                            <img src={logo} alt="item" style={{ alignSelf: "center", width: "700", height: "130px" }} />
+                                        </div>
                                         :
                                         <div style={{ display: "flex", justifyContent: "center", alignContent: "center" }}>
                                             <img src={recipedetails.image} alt="item" style={{ alignSelf: "center", width: "600", height: "100px" }} />
@@ -138,90 +141,66 @@ const RecipeDetails = () => {
                             </div>
 
 
-                            <div className="col-span-12 sm:col-span-5 md:col-span-5" >
+                            <div className="col-span-12 sm:col-span-6 md:col-span-6" >
                                 <Card style={{ height: "100px" }}>
-                                    <CardHeader title={"Recipe Items"} />
-                                    <CardItem title={"Stock In Hand"} value={"itemdetails?.stock_in_hand"} />
-                                    <CardItem title={"Opening Stock Rate"} value={"itemdetails?.opening_stock_rate"} />
-                                    <CardItem title={"Re-order Unit"} value={"itemdetails?.reorder_unit"} />
-                                    <CardItem title={"Description"} value={"itemdetails?.inventory_description"} />
+                                    <CardHeader title={"Items Details"} />
+                                    {recipedetails == null || undefined || recipedetails?.length == 0 ? <></>
+                                        :
+                                        <>
+                                            {recipedetails?.items.map((item, index) => (
+                                                <>
+                                                    <div className="container mx-auto">
+                                                        <div className="p-2 rounded-lg col-span-12 sm:col-span-5 flex md:col-span-12 items-center">
+
+                                                            {item?.image == null || undefined ? (
+                                                                <img src={imagePlaceholder} alt="item" className="border border-gray-400 rounded-lg p-2 w-40 h-20 mr-5" />
+                                                            ) :
+                                                                <img
+                                                                    src={item?.image}
+                                                                    alt="..."
+                                                                    className="border border-gray-400 rounded-lg p-2 w-40 h-20 mr-5"
+                                                                />
+                                                            }
+
+                                                            <div className="flex flex-col items-center w-full">
+                                                                <div className="card-item flex justify-between items-center w-full">
+                                                                    <h1 className="font-medium text-base text-black/60 dark:text-white/60">
+                                                                        Item Name
+                                                                    </h1>
+                                                                    <h1 className="text-sm text-right">{item?.name || "Not Yet"}</h1>
+                                                                </div>
+
+                                                                <div className="card-item flex justify-between items-center w-full">
+                                                                    <h1 className="font-medium text-base text-black/60 dark:text-white/60">
+                                                                        Quantity
+                                                                    </h1>
+                                                                    <h1 className="text-sm text-right">{item?.quantity || "Not Yet"}</h1>
+                                                                </div>
+
+                                                                <div className="card-item flex justify-between items-center w-full">
+                                                                    <h1 className="font-medium text-base text-black/60 dark:text-white/60">
+                                                                        Measuring Unit
+                                                                    </h1>
+                                                                    <h1 className="text-sm text-right">{item?.measuring_unit || "Not Yet"}</h1>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div >
+
+                                                    <hr class="my-5" />
+                                                </>
+                                            ))}
+                                        </>
+                                    }
                                 </Card>
                             </div>
                         </div>
                     </div>
-
-                    {/* {itemdetails?.type == "SERVICE" ?
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <Card>
-                                <CardHeader title={"Service Details"} />
-                                <CardItem title={"Item Type"} value={itemdetails?.type} />
-                                <CardItem title={"Name"} value={itemdetails?.name} />
-                                <CardItem title={"Preffered Vendor"} value={`${itemdetails?.vendors[0]?.first_name} ${itemdetails?.vendors[0]?.last_name}`} />
-                                <CardItem title={"Description"} value={itemdetails?.description} />
-                            </Card>
-                        </div>
-                        :
-                        <div className="container mx-auto">
-                            <div className="grid grid-cols-12 gap-4">
-
-                                <div className="col-span-12 sm:col-span-7 md:col-span-7">
-                                    <Card  >
-                                        <CardHeader title={"Product Details"} />
-                                        {itemdetails?.image == null || undefined || itemdetails.legth == 0 ?
-                                            <img src={logo} alt="item" />
-                                            :
-                                            <div style={{ display: "flex", justifyContent: "center", alignContent: "center" }}>
-                                                <img src={itemdetails.image} alt="item" style={{ alignSelf: "center", width: "500", height: "100px" }} />
-                                            </div>
-                                        }
-                                        <CardItem title={"Item Type"} value={itemdetails?.type} />
-                                        <CardItem title={"Name"} value={itemdetails?.name} />
-                                        <CardItem title={"Product Catalog"} value={itemdetails?.product_catalog} />
-                                        <CardItem title={"Category"} value={itemdetails?.product_category} />
-                                        <CardItem title={"Unit Category"} value={itemdetails?.unit_category} />
-                                        {itemdetails?.unit_category === "quantity" ?
-                                            <CardItem title={"Quantity Unit"} value={itemdetails?.quantity_units} />
-                                            :
-                                            <></>
-                                        }
-                                        <CardItem title={`${itemdetails?.unit_category == "quantity" ? "Quantity" : "Unit"}`} value={itemdetails?.product_units} />
-                                        <CardItem title={`${itemdetails?.unit_category == "quantity" ? "Usage Quantity" : "Usage Unit"}`} value={itemdetails?.usage_unit} />
-                                        <CardItem
-                                            title={"Preferred Vendor"}
-                                            value={
-                                                <ul>
-                                                    {itemdetails?.vendors == null || undefined || itemdetails?.vendors.length == 0 ?
-                                                        <></>
-                                                        :
-                                                        <>
-                                                            {itemdetails?.vendors && itemdetails?.vendors?.map((item, index) => (
-                                                                <li key={index}>
-                                                                    {`${item?.first_name} ${item?.last_name}`}
-                                                                </li>
-                                                            ))}
-                                                        </>}
-                                                </ul>
-                                            }
-                                        />
-                                    </Card>
-                                </div>
-
-
-                                <div className="col-span-12 sm:col-span-5 md:col-span-5" >
-                                    <Card style={{ height: "100px" }}>
-                                        <CardHeader title={"Inventory Details"} />
-                                        <CardItem title={"Stock In Hand"} value={itemdetails?.stock_in_hand} />
-                                        <CardItem title={"Opening Stock Rate"} value={itemdetails?.opening_stock_rate} />
-                                        <CardItem title={"Re-order Unit"} value={itemdetails?.reorder_unit} />
-                                        <CardItem title={"Description"} value={itemdetails?.inventory_description} />
-                                    </Card>
-                                </div>
-                            </div>
-                        </div>
-                    } */}
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 
