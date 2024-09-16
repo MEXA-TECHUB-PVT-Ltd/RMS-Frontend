@@ -40,10 +40,63 @@ const Purchaserequisition = () => {
         { pr_number: "e3r5gf6yg", requested_by: "John Doe", requested_date: "29-07-2024", piriority: "Low", status: "DRAFT" },
     ]
 
+    const [selectedRows, setSelectedRows] = useState([]);
+    const handleNewButtonClick = () => {
+        // Perform your action, e.g., call an API
+        console.log("Performing action with selected rows:", selectedRows);
+    };
+
+    const handleRowSelect = (rowId) => {
+        setSelectedRows((prevSelectedRows) =>
+            prevSelectedRows.includes(rowId)
+                ? prevSelectedRows.filter((id) => id !== rowId)
+                : [...prevSelectedRows, rowId]
+        );
+    };
+
+    const handleSelectAll = (isSelected) => {
+        if (isSelected) {
+            // Select all rows
+            const allRowIds = data.map((row) => row.id); // Assuming your data is an array of rows
+            setSelectedRows(allRowIds);
+        } else {
+            // Deselect all rows
+            setSelectedRows([]);
+        }
+    };
+
     const prColumns = [
+        // {
+        //     name: (
+        //         <input
+        //             type="checkbox"
+        //             onChange={(e) => handleSelectAll(e.target.checked)} // Select/Deselect all checkboxes
+        //         />
+        //     ),
+        //     selector: (row) => (
+        //         <input
+        //             type="checkbox"
+        //             checked={selectedRows.includes(row.id)} // Adjust according to your selected rows state
+        //             onChange={() => handleRowSelect(row.id)} // Handle single row selection
+        //         />
+        //     ),
+        //     style: {
+        //         width: '50px',
+        //         textAlign: 'center',
+        //     },
+        // },
         {
-            name: "PR Nnumber",
-            selector: (row) => row.pr_number == null || undefined ? "-" : row.pr_number,
+            name: "PR Number",
+            selector: (row) => (
+                <div className="flex items-center gap-5">
+                    <input
+                        type="checkbox"
+                        checked={selectedRows.includes(row.id)} // Adjust according to your selected rows state
+                        onChange={() => handleRowSelect(row.id)} // Handle single row selection
+                    />
+                    {row.pr_number == null ? "-" : row.pr_number}
+                </div>
+            ),
             sortable: true,
             style: {
                 width: '100px',
@@ -51,7 +104,7 @@ const Purchaserequisition = () => {
         },
         {
             name: "Requested By",
-            selector: (row) => row.requested_by == null || undefined ? "-" : row.requested_by,
+            selector: (row) => row.requested_by == null ? "-" : row.requested_by,
             sortable: true,
             style: {
                 width: '100px',
@@ -73,23 +126,21 @@ const Purchaserequisition = () => {
         {
             name: "Status",
             selector: (row) => (
-                <div style={{
-                    fontWeight: "bold",
-                    borderRadius: "50px",
-                    backgroundColor: row.status === "DRAFT" ? 'darkblue' :
-                        row.status === "PENDING" ? 'orange' :
-                            row.status === "ACCEPTED" ? 'green' :
-                                row.status === "REJECTED" ? 'red' :
-                                    'yellow',
-                    padding: 8,
-                    color: "white",
-                    width: '100px',
-                    // color: row.status === "DRAFT" ? 'darkblue' :
-                    //     row.status === "PENDING" ? 'orange' :
-                    //         row.status === "ACCEPTED" ? 'green' :
-                    //             row.status === "REJECTED" ? 'red' :
-                    //                 'yellow',  
-                }}>
+                <div
+                    style={{
+                        fontWeight: "bold",
+                        borderRadius: "50px",
+                        backgroundColor:
+                            row.status === "DRAFT" ? 'darkblue' :
+                                row.status === "PENDING" ? 'orange' :
+                                    row.status === "ACCEPTED" ? 'green' :
+                                        row.status === "REJECTED" ? 'red' :
+                                            'yellow',
+                        padding: 8,
+                        color: "white",
+                        width: '100px',
+                    }}
+                >
                     <div style={{ textAlign: "center" }}>
                         {row.status == null ? "-" : row.status}
                     </div>
@@ -97,7 +148,7 @@ const Purchaserequisition = () => {
             ),
             sortable: true,
             style: {
-                width: '100px', // Set the width you want
+                width: '100px',
             },
         },
         {
@@ -109,22 +160,24 @@ const Purchaserequisition = () => {
                         className="text-eye_black dark:text-eye_white flex-none"
                         onClick={() => navigate(`/purchase-requisition-details?pr_id=${row.id}`)}
                     />
-
-                    <FaEdit
-                        size={20}
-                        className={`${textColor}`}
-                        onClick={() => navigate(`/edit-puchase-requisition?pr_id=${row.id}`)}
-                    />
-
-                    <FaTrash
-                        size={15}
-                        className="text-red-600 flex-none"
-                        onClick={() => {
-                            setCurrentId(row.id);
-                            setDeleteModal(true);
-                        }}
-                    />
-                </div >
+                    {row?.status !== "ACCEPTED" && (
+                        <>
+                            <FaTrash
+                                size={15}
+                                className="text-red-600 flex-none"
+                                onClick={() => {
+                                    setCurrentId(row.id);
+                                    setDeleteModal(true);
+                                }}
+                            />
+                            <FaEdit
+                                size={20}
+                                className={`${textColor}`}
+                                onClick={() => navigate(`/edit-purchase-requisition?pr_id=${row.id}`)}
+                            />
+                        </>
+                    )}
+                </div>
             ),
             style: {
                 width: '350px',
@@ -253,6 +306,8 @@ const Purchaserequisition = () => {
 
     const { isLoading, pr, pagination, error } = useSelector((state) => state.getPR);
 
+    console.log("pr", pr);
+
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchQuery, setSearchQuery] = useState('');
@@ -284,6 +339,8 @@ const Purchaserequisition = () => {
                 onViewType={setViewType}
                 onSearch={handleSearch}
                 onAddButtonClick={() => navigate("/add-puchase-requisition")}
+                selectedItems={selectedRows}
+                onNewButtonClick={handleNewButtonClick}
             />
 
             {/* <div className="py-5 px-10"> */}

@@ -25,6 +25,8 @@ const Recipes = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [viewType, setViewType] = useState("");
+    const [currentId, setCurrentId] = useState(null);
+    const [deleteModal, setDeleteModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [loadingApproval, setLoadingApproval] = useState({});
 
@@ -89,15 +91,15 @@ const Recipes = () => {
                     <FaEdit
                         size={20}
                         className={`${textColor}`}
-                    // onClick={() => navigate(`/edit-item?item_id=${row.id}`)}
+                        onClick={() => navigate(`/edit_recipe?recipe_id=${row.id}`)}
                     />
                     <FaTrash
                         size={20}
                         className="text-red-600"
-                    // onClick={() => {
-                    //     setCurrentId(row.id);
-                    //     setDeleteModal(true);
-                    // }}
+                        onClick={() => {
+                            setCurrentId(row.id);
+                            setDeleteModal(true);
+                        }}
                     />
                 </div>
             ),
@@ -107,56 +109,43 @@ const Recipes = () => {
         },
     ];
 
-    const updateStatus = (row) => {
-        console.log(row.id,
-            "Paid");
-        setLoadingApproval(prev => ({ ...prev, [row.id]: true }));
+    const onDelete = () => {
+        console.log("currentId", currentId);
+        setLoading(true);
         setTimeout(() => {
-            const InsertAPIURL = `${API_URL}/invoice/update/status`;
-
-            // const formData = new FormData();
-
-            // formData.append("status", "ACCEPTED");
-
-            var Data = {
-                "id": row.id,
-                "status": "Paid" //'Paid', 'Draft', 'Unpaid'
-            }
+            const InsertAPIURL = `${API_URL}/recipe/delete?id=${currentId}`;
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            };
 
             fetch(InsertAPIURL, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',  // Specify JSON content type
-                },
-                body: JSON.stringify(Data),
+                method: 'DELETE',
+                headers: headers,
+                body: JSON.stringify(),
             })
                 .then(response => response.json())
                 .then(response => {
                     console.log(response);
-                    setLoadingApproval(false);
-
+                    setLoading(false);
                     if (response.success) {
-                        setLoadingApproval(prev => ({ ...prev, [row.id]: false }));
+                        setDeleteModal
+                        setLoading(false);
                         toast.success(response.message);
-                        dispatch(getRecipes(
-                            {
-                                currentPage,
-                                perPage: rowsPerPage,
-                                search: searchQuery
-                            }
-                        ));
+                        setDeleteModal(false);
+                        dispatch(getRecipes({ currentPage, perPage: rowsPerPage, search: searchQuery }));
                     } else {
-                        setLoadingApproval(prev => ({ ...prev, [row.id]: false }));
-                        toast.error(response.error.message);
+                        setLoading(false);
+                        toast.error(response.message);
+                        setDeleteModal(false);
                     }
                 })
                 .catch(error => {
-                    setLoadingApproval(prev => ({ ...prev, [row.id]: false }));
-                    toast.error(error.message, {
-                        position: toast.POSITION.BOTTOM_CENTER
-                    });
+                    setLoading(false);
+                    toast.error(error.message);
                 });
         }, 3000);
+
     }
 
     const { isLoading, recipe, pagination, error } = useSelector((state) => state.getRecipe);
@@ -193,7 +182,7 @@ const Recipes = () => {
                 viewType={viewType}
                 onViewType={setViewType}
                 onSearch={handleSearch}
-                onAddButtonClick={() => navigate("/add_invoice")}
+                onAddButtonClick={() => navigate("/add_recipe")}
             />
 
             {/* <div className="py-5 px-10"> */}
@@ -243,6 +232,31 @@ const Recipes = () => {
                     )}
                 </>
             )}
+
+            <Modal
+                title={"Delete Recipe"}
+                size="sm"
+                isOpen={deleteModal}
+                onClose={() => setDeleteModal(false)}
+            >
+                <h1 className="flex-start text-base font-semibold">
+                    Are you sure want to delete this Recipe?{" "}
+                </h1>
+
+                <div className="flex-end gap-3 mt-5">
+                    <Button
+                        title={"Cancel"}
+                        onClick={() => setDeleteModal(false)}
+                        color={"bg-red-500"}
+                    />
+                    <Button
+                        title={"Delete"}
+                        onClick={loading ? "" : () => onDelete(currentId)}
+                        spinner={loading ? <Spinner size="sm" /> : null}
+                    />
+                </div>
+            </Modal>
+
         </div>
     );
 };

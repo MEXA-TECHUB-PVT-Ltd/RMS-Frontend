@@ -55,7 +55,7 @@ const SidebarLayout = () => {
               </Link>
             </div>
             {item.submenu && activeMenu === item.id && (
-              <div className="ml-2">
+              <div className="border-l-2 border-gray-400 ml-2">
                 {item.submenu.map((subItem, j) => (
                   <div
                     key={j}

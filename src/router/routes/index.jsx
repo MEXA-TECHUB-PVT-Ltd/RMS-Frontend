@@ -23,7 +23,9 @@ import AddInvoice from "../../views/Invoices/AddInvoice"
 import InvoiceDetails from "../../views/Invoices/InvoiceDetails"
 import Recipes from "../../views/Recipes/Recipes"
 import RecipeDetails from "../../views/Recipes/RecipeDetails"
-//  RecipeDetails
+import AddRecipe from "../../views/Recipes/AddRecipe"
+import EditRecipe from "../../views/Recipes/EditRecipe"
+//  EditRecipe
 export default [
   {
     path: "/",
@@ -108,6 +110,14 @@ export default [
   {
     path: "/recipe_detail",
     element: <RecipeDetails />,
+  },
+  {
+    path: "/add_recipe",
+    element: <AddRecipe />,
+  },
+  {
+    path: "/edit_recipe",
+    element: <EditRecipe />,
   },
   {
     path: "/puchase-requisition",

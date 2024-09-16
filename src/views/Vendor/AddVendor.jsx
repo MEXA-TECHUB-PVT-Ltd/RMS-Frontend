@@ -102,27 +102,42 @@ const AddVendor = () => {
 
     formData.append("v_type", data?.v_type);
     formData.append("provider_type", data?.provider_type);
-    formData.append("first_name", data?.first_name);
-    formData.append("last_name", data?.last_name);
-    formData.append("company_name", data?.company_name);
+    formData.append("first_name", data?.first_name || "");
+    formData.append("last_name", data?.last_name || "");
+    formData.append("company_name", data?.company_name || "");
     formData.append("vendor_display_name", data?.vendor_display_name);
     formData.append("email", data?.email);
-    formData.append("work_no", data?.work_no);
+    formData.append("work_no", data?.work_no || "");
     formData.append("phone_no", data?.phone_no);
-    formData.append("address", data?.address);
-    formData.append("fax_number", data?.fax_number);
-    formData.append("state", data?.state);
-    formData.append("zip_code", data?.zip_code);
-    formData.append("country", data?.country);
-    formData.append("city", data?.city);
-    formData.append("shipping_address", data?.shipping_address);
+    formData.append("address", data?.address || "");
+    formData.append("fax_number", data?.fax_number || "");
+    formData.append("state", data?.state || "");
+    formData.append("zip_code", data?.zip_code || "");
+    formData.append("country", data?.country || "");
+    formData.append("city", data?.city || "");
+    formData.append("shipping_address", data?.shipping_address || "");
     formData.append("payment_term_id", data?.payment_term_id);
     formData.append("currency_id", data?.currency_id);
-    formData.append("document", document);
-    formData.append("cnic_front_img", cnic_front_img);
-    formData.append("cnic_back_img", cnic_back_img);
-    contact_person &&
-      formData.append("contact_person", JSON?.stringify(contact_person));
+
+    // Only append the document if it exists
+    if (document) {
+      formData.append("document", document);
+    }
+
+    // Only append cnic_front_img if it exists
+    if (cnic_front_img) {
+      formData.append("cnic_front_img", cnic_front_img);
+    }
+
+    // Only append cnic_back_img if it exists
+    if (cnic_back_img) {
+      formData.append("cnic_back_img", cnic_back_img);
+    }
+
+    // Append contact_person only if it has values
+    if (contact_person.first_name || contact_person.last_name || contact_person.email || contact_person.phone_no || contact_person.work_no) {
+      formData.append("contact_person", JSON.stringify(contact_person));
+    }
 
     try {
       const { success, message } = await dispatch(addVendor(formData)).unwrap();
@@ -138,7 +153,7 @@ const AddVendor = () => {
         }, 3000);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(error?.message);
     }
   };
@@ -147,6 +162,7 @@ const AddVendor = () => {
     dispatch(getCurrencies());
     dispatch(getPaymentTerms());
   }, [dispatch]);
+
 
   return (
     <Form
