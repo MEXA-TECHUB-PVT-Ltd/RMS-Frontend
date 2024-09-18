@@ -67,7 +67,7 @@ const Purchaseorder = () => {
         {
             name: "Status",
             selector: (row) => (
-                <div style={{ 
+                <div style={{
                     fontWeight: "bold",
                     borderRadius: "50px",
                     backgroundColor: row.status === "DRAFT" ? 'darkblue' :
@@ -119,7 +119,7 @@ const Purchaseorder = () => {
                             setCancelModal(true);
                         }}
                     />
-
+                    {/* 
                     {row.status === "DRAFT" && (
                         <FaTrash
                             size={15}
@@ -129,7 +129,7 @@ const Purchaseorder = () => {
                                 setDeleteModal(true);
                             }}
                         />
-                    )}
+                    )} */}
                     <button
                         onClick={row.status === "DRAFT" ? () => sendtovendor(row) : undefined}
                         style={{
@@ -252,7 +252,7 @@ const Purchaseorder = () => {
     const sendtovendor = (row) => {
 
         // console.log(row);
-        // console.log("purchase_requisition_id", row.purchase_requisition_id);
+        console.log("purchase_order_id", row.purchase_order_id);
         // console.log("vendor ids", row?.vendors_ids);
         setLoading(true);
         setTimeout(() => {

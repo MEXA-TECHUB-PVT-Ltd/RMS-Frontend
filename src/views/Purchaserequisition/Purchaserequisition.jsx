@@ -27,6 +27,7 @@ const Purchaserequisition = () => {
     const [viewType, setViewType] = useState("");
     const [currentId, setCurrentId] = useState(null);
     const [deleteModal, setDeleteModal] = useState(false);
+    const [convertPOModal, setConvertPOModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [loadingApproval, setLoadingApproval] = useState({});
 
@@ -42,8 +43,50 @@ const Purchaserequisition = () => {
 
     const [selectedRows, setSelectedRows] = useState([]);
     const handleNewButtonClick = () => {
-        // Perform your action, e.g., call an API
-        console.log("Performing action with selected rows:", selectedRows);
+        // console.log("Performing action with selected rows:", selectedRows);
+        setLoading(true);
+        setTimeout(() => {
+            const InsertAPIURL = `${API_URL}/purchase-requisition/convert/to/PO`;
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            };
+
+            var Data = {
+                purchaseRequisitionIds: selectedRows
+            }
+
+            fetch(InsertAPIURL, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(Data),
+            })
+                .then(response => response.json())
+                .then(response => {
+                    console.log(response);
+                    setLoading(false);
+                    if (response.success) {
+                        setLoading(false);
+                        toast.success(response.message);
+                        setConvertPOModal(false);
+                        dispatch(
+                            getPRs({
+                                page,
+                                limit: rowsPerPage,
+                                search: searchQuery, // Include searchQuery in the request
+                            })
+                        );
+                    } else {
+                        setLoading(false);
+                        toast.error(response.message);
+                        setConvertPOModal(false);
+                    }
+                })
+                .catch(error => {
+                    setLoading(false);
+                    toast.error(error.message);
+                });
+        }, 3000);
     };
 
     const handleRowSelect = (rowId) => {
@@ -54,16 +97,16 @@ const Purchaserequisition = () => {
         );
     };
 
-    const handleSelectAll = (isSelected) => {
-        if (isSelected) {
-            // Select all rows
-            const allRowIds = data.map((row) => row.id); // Assuming your data is an array of rows
-            setSelectedRows(allRowIds);
-        } else {
-            // Deselect all rows
-            setSelectedRows([]);
-        }
-    };
+    // const handleSelectAll = (isSelected) => {
+    //     if (isSelected) {
+    //         // Select all rows
+    //         const allRowIds = data.map((row) => row.id); // Assuming your data is an array of rows
+    //         setSelectedRows(allRowIds);
+    //     } else {
+    //         // Deselect all rows
+    //         setSelectedRows([]);
+    //     }
+    // };
 
     const prColumns = [
         // {
@@ -306,6 +349,7 @@ const Purchaserequisition = () => {
 
     const { isLoading, pr, pagination, error } = useSelector((state) => state.getPR);
 
+    const filteredPRs = pr?.filter((row) => row?.status != "ACCEPTED" || row?.po_status != true);
     console.log("pr", pr);
 
     const [page, setPage] = useState(1);
@@ -340,7 +384,7 @@ const Purchaserequisition = () => {
                 onSearch={handleSearch}
                 onAddButtonClick={() => navigate("/add-puchase-requisition")}
                 selectedItems={selectedRows}
-                onNewButtonClick={handleNewButtonClick}
+                onNewButtonClick={() => setConvertPOModal(true)}
             />
 
             {/* <div className="py-5 px-10"> */}
@@ -350,7 +394,7 @@ const Purchaserequisition = () => {
                 <>
                     {viewType !== "GRID" ? (
                         <DataTable
-                            data={pr}
+                            data={filteredPRs}
                             columns={prColumns}
                             pagination
                             paginationServer
@@ -360,7 +404,7 @@ const Purchaserequisition = () => {
                         />
                     ) : (
                         <div className="card-view">
-                            {pr.map((item) => {
+                            {filteredPRs.map((item) => {
                                 return (
                                     <Card key={item?.id}>
                                         <CardItem title={"PR Number"} value={item?.pr_number == null || undefined ? "-" : item?.pr_number} />
@@ -423,6 +467,32 @@ const Purchaserequisition = () => {
                     />
                 </div>
             </Modal>
+
+            {/* convert to PO */}
+            <Modal
+                title={"Convert to PO"}
+                size="sm"
+                isOpen={convertPOModal}
+                onClose={() => setConvertPOModal(false)}
+            >
+                <h1 className="flex-start text-base font-semibold">
+                    Are you sure want to convert this PR?{" "}
+                </h1>
+
+                <div className="flex-end gap-3 mt-5">
+                    <Button
+                        title={"Cancel"}
+                        onClick={() => setConvertPOModal(false)}
+                        color={"bg-red-500"}
+                    />
+                    <Button
+                        title={"Convert"}
+                        onClick={loading ? "" : () => handleNewButtonClick()}
+                        spinner={loading ? <Spinner size="sm" /> : null}
+                    />
+                </div>
+            </Modal>
+
         </div>
     );
 };

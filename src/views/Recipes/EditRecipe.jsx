@@ -94,29 +94,51 @@ const EditRecipe = () => {
         fetchItemByID(recipedetails && recipedetails?.items?.map((item) => (item?.item_id)));
     }, [recipeId]);
 
-    const [itemdetails, setItemdetails] = useState([]);
-    const fetchItemByID = async (item_id) => {
-
+    const [unitOptions, setUnitOptions] = useState("");
+    const fetchunitCategory = async (unit) => {
         try {
-            const promises = item_id.map(async (id) => {
-                // Fetch the item details by ID (assuming fetchSingleItemByID is your API call) 
+            const response = await fetch(`${API_URL}/units/get?category=${unit}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            const formattedUnits = data.result.units.map((unit) => ({
+                value: unit.id,
+                label: unit.unit
+            }));
 
+            const foundCategoryName = formattedUnits.find(item => item?.label === recipedetails?.measuring_unit);
+            setUnitOptions(foundCategoryName);
+
+            console.log("foundCategoryName", foundCategoryName);
+
+            return formattedUnits;
+        } catch (error) {
+            console.log(error.message);
+            return [];
+        }
+    };
+
+    const [itemdetails, setItemdetails] = useState([]);
+    const fetchItemByID = async (item_ids) => {
+        try {
+            const promises = item_ids.map(async (id) => {
                 const response = await fetch(`${API_URL}/item/specific?id=${id}`);
-
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
 
-                // console.log("data data", data);
-                return data.result; // Adjust this based on your API response structure
+                const unitOptions = await fetchunitCategory(data?.result?.unit_category);
+
+                return {
+                    ...data.result,
+                    unitOptions // Store the unit options with each item
+                };
             });
 
             const itemsDetailsArray = await Promise.all(promises);
-            console.log("item detail", itemsDetailsArray);
             setItemdetails(itemsDetailsArray);
-
-
         } catch (error) {
             console.log(error.message);
         }
@@ -421,6 +443,8 @@ const EditRecipe = () => {
                     quantity: Yup.number()
                         .required('Quantity is required')
                         .typeError('Quantity must be a number'),
+                    measuring_unit: Yup.string()
+                        .required('Measuring Unit is required')
                 })
             )
             .min(1, 'At least one item is required'),
@@ -483,6 +507,7 @@ const EditRecipe = () => {
                     items: recipedetails?.items?.map((item) => ({
                         item_id: item?.item_id ?? "",
                         quantity: item?.quantity ?? "",
+                        measuring_unit: item?.measuring_unit ?? "",
                         name: item?.name ?? ""
                     })) ?? [],
                     // vendor: [],
@@ -766,12 +791,12 @@ const EditRecipe = () => {
                                                         <div>
                                                             <div className="font-bold text-lg">{itemDetail?.name}</div>
                                                             <div className="font-bold text-lg">{itemDetail?.type}</div>
-                                                            {/* {item?.type} */}
                                                         </div>
                                                     </div>
 
                                                     {/* Quantity Field */}
-                                                    <div className="col-span-3">
+
+                                                    <div className="col-span-2">
                                                         <AppInput
                                                             type="number"
                                                             label="Quantity"
@@ -783,6 +808,31 @@ const EditRecipe = () => {
                                                             <div className="text-red-500">{errors.items[index].quantity}</div>
                                                         )}
 
+                                                    </div>
+
+                                                    <div className="col-span-2">
+                                                        {itemDetail?.unit_category === 'quantity' ? (
+                                                            // If the unit category is 'quantity', render AppInput
+                                                            <AppInput
+                                                                type="number"
+                                                                label="Measuring Unit"
+                                                                name={`items[${index}].measuring_unit`}
+                                                                value={item.measuring_unit}
+                                                                onChange={(e) => handleItemFieldChange(index, 'measuring_unit', e.target.value)}
+                                                            />
+                                                        ) : (
+                                                            // Otherwise, render AppSelect
+                                                            <AppSelect
+                                                                label="Measuring Unit"
+                                                                name={`items[${index}].measuring_unit`}
+                                                                value={item.measuring_unit}
+                                                                options={itemDetail?.unitOptions || []}
+                                                                onChange={(e) => handleItemFieldChange(index, 'measuring_unit', e.target.value)}
+                                                            />
+                                                        )}
+                                                        {errors.items?.[index]?.measuring_unit && touched.items?.[index]?.measuring_unit && (
+                                                            <div className="text-red-500">{errors.items[index].measuring_unit}</div>
+                                                        )}
                                                     </div>
 
                                                     {/* Cross Icon */}

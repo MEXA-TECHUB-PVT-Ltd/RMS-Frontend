@@ -193,7 +193,7 @@ const EditItem = () => {
                 unit_category: data.unit_category,
                 quantity_units: data.quantity_unit,// "packs of bread",
                 product_units: data.units,
-                usage_unit: data.usage_unit,
+                // usage_unit: data.usage_unit,
                 product_catalog: data.catalog,
                 vendor_ids: data.vendor,
                 image: cnic_back_img ? (cnic_back_img instanceof File ? response.data.url : cnic_back_img.preview) : null,
@@ -210,7 +210,7 @@ const EditItem = () => {
                 quantity_units: data.quantity_unit,
                 product_units: data.units,
                 unit_category: data.unit_category,
-                usage_unit: data.usage_unit,
+                // usage_unit: data.usage_unit,
                 product_catalog: data.catalog,
                 vendor_ids: data.vendor,
                 image: cnic_back_img ? (cnic_back_img instanceof File ? response.data.url : cnic_back_img.preview) : null,
@@ -364,7 +364,7 @@ const EditItem = () => {
         name: Yup.string().required("Name is required"),
         unit_category: Yup.string().required("Unit category is required"),
         units: Yup.string().required("Unit is required"),
-        usage_unit: Yup.string().required("Usage unit is required"),
+        // usage_unit: Yup.string().required("Usage unit is required"),
         catalog: Yup.string().required("Catalog is required"),
         vendor: Yup.array()
             .of(Yup.string().required('Vendor is required'))
@@ -428,7 +428,7 @@ const EditItem = () => {
                 name: itemdetails?.name ?? "",
                 unit_category: itemdetails?.unit_category ?? "",
                 units: unit?.value || itemdetails?.product_units || "",  // Use .value to ensure the ID is passed
-                usage_unit: usage_unit?.value || itemdetails?.usage_unit || "",
+                // usage_unit: usage_unit?.value || itemdetails?.usage_unit || "",
 
                 quantity_unit: itemdetails?.quantity_units ?? "",
 
@@ -589,7 +589,7 @@ const EditItem = () => {
                                                     <ErrorMessage name="units" />
                                                 </div>
 
-                                                <div>
+                                                {/* <div>
                                                     <AppInput
                                                         type="number"
                                                         label="Usage Quantity"
@@ -598,7 +598,7 @@ const EditItem = () => {
                                                         onChange={handleCustomChange("usage_unit")}
                                                     />
                                                     <ErrorMessage name="usage_unit" />
-                                                </div>
+                                                </div> */}
                                             </>
                                         ) : (
                                             <>
@@ -613,7 +613,7 @@ const EditItem = () => {
                                                     <ErrorMessage name="units" />
                                                 </div>
 
-                                                <div>
+                                                {/* <div>
                                                     <AppSelect
                                                         label="Usage Units"
                                                         name="usage_unit"
@@ -622,7 +622,7 @@ const EditItem = () => {
                                                         onChange={handleCustomChange("usage_unit")}
                                                     />
                                                     <ErrorMessage name="usage_unit" />
-                                                </div>
+                                                </div> */}
                                             </>
                                         )}
                                     </div>
