@@ -133,7 +133,7 @@ const EditPurchaseReceive = () => {
     const [itemdetails, setItemdetails] = useState([]);
     const fetchItemByID = async (vendor_id) => {
         try {
-            console.log("fetchItemByID",vendor_id)
+            console.log("fetchItemByID", vendor_id)
             const promises = vendor_id.map(async (id) => {
 
                 console.log("poID", purchase_receives?.purchase_order_id)
@@ -608,7 +608,7 @@ const EditPurchaseReceive = () => {
                                                         value={item.received_quantity}
                                                         onChange={(e) => handleItemFieldChange(index, 'received_quantity', e.target.value)}
                                                     />
-                                                    {errors.items?.[index]?.received_quantity && (
+                                                    {errors.items?.[index]?.received_quantity && touched.items?.[index]?.received_quantity && (
                                                         <div style={{ color: "red", fontSize: "13px" }}>
                                                             {errors.items[index].received_quantity}
                                                         </div>
@@ -618,7 +618,7 @@ const EditPurchaseReceive = () => {
                                                 <div>
                                                     <AppInput
                                                         type="number"
-                                                        label="Price"
+                                                        label="Price per unit"
                                                         name={`items[${index}].price`}
                                                         value={item.price}
                                                         disabled

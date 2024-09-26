@@ -38,13 +38,13 @@ const Item = () => {
 
     const itemColumns = [
         {
-            name: "Item Type",
-            selector: (row) => row.type == null || undefined ? "-" : row.type,
+            name: "Name",
+            selector: (row) => row.name,
             sortable: true,
         },
         {
-            name: "Name",
-            selector: (row) => row.name,
+            name: "Item Type",
+            selector: (row) => row.type == null || undefined ? "-" : row.type,
             sortable: true,
         },
         {
@@ -58,7 +58,7 @@ const Item = () => {
             sortable: true,
         },
         {
-            name: "Opening Stock",
+            name: "Stock in Hand",
             selector: (row) => row.stock_in_hand == null || undefined ? "-" : row.stock_in_hand,
             sortable: true,
         },
@@ -74,16 +74,19 @@ const Item = () => {
                     <FaEye
                         size={20}
                         className="text-eye_black dark:text-eye_white"
+                        title="view"
                         onClick={() => navigate(`/item-detail?item_id=${row.id}`)}
                     />
                     <FaEdit
                         size={20}
                         className={`${textColor}`}
+                        title="edit"
                         onClick={() => navigate(`/edit-item?item_id=${row.id}`)}
                     />
                     <FaTrash
                         size={20}
                         className="text-red-600"
+                        title="delete"
                         onClick={() => {
                             setCurrentId(row.id);
                             setDeleteModal(true);
@@ -127,7 +130,7 @@ const Item = () => {
                         );
                     } else {
                         setLoading(false);
-                        toast.error(response.message);
+                        toast.error(response.error.message);
                         setDeleteModal(false);
                     }
                 })

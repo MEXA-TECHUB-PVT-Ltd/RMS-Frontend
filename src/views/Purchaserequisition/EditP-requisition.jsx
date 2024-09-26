@@ -281,10 +281,8 @@ const EditPurchaseRequisition = () => {
     // Function to validate items
     const validateItems = (items) => {
         const errors = {};
-        items.forEach((item, index) => {
-            // if (!item.available_stock) errors[`items[${index}].available_stock`] = 'Stock in hand is required';
-            if (!item.required_quantity) errors[`items[${index}].required_quantity`] = 'Required quantity is required';
-            // if (!item.price) errors[`items[${index}].price`] = 'Price is required';
+        items.forEach((item, index) => { 
+            if (!item.required_quantity) errors[`items[${index}].required_quantity`] = 'Required quantity is required'; 
             if (item.preferred_vendor_ids.length === 0) errors[`items[${index}].preferred_vendor_ids`] = 'Preferred Vendor is required';
         });
         return errors;
@@ -406,16 +404,6 @@ const EditPurchaseRequisition = () => {
                     return (
                         <Form>
                             <div className="modal-item-container">
-                                {/* <div>
-                                    <AppInput
-                                        type="text"
-                                        label="PR Number"
-                                        name="pr_no"
-                                        value={values.pr_no}
-                                        onChange={handleChange}
-                                    />
-                                    <ErrorMessage name="pr_no" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                </div> */}
 
                                 <div>
                                     <AppSelect
@@ -467,50 +455,59 @@ const EditPurchaseRequisition = () => {
                                     />
                                     <ErrorMessage name="shipment_pre" />
                                 </div>
+                            </div>
 
-                                <div>
-                                    <AppMultiSelect
-                                        label="Item"
-                                        name="items"
-                                        value={values.items.map(item => item.item_id)} // Display only item IDs
-                                        options={itemOptions}
-                                        onChange={handleItemSelection}
-                                        isMulti={true}
-                                    />
+                            <div className="pl-5 pr-5 container mx-auto">
+                                <div className="grid grid-cols-12 gap-4">
 
-                                    {errors.items && (
-                                        <>
-                                            {values.items && values.items.length == 0 ?
-                                                <div style={{ color: 'red', fontSize: "13px" }}>Item is required</div>
-                                                :
-                                                <></>
-                                            }
-                                        </>
-                                    )}
+                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                        <AppInput
+                                            type="textarea"
+                                            label="Shipment Address"
+                                            name="shipment_address"
+                                            value={values.shipment_address}
+                                            onChange={handleChange}
+                                        />
+                                        <ErrorMessage name="shipment_address" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                    </div>
+
+                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                        <AppInput
+                                            type="textarea"
+                                            label="PR Detail"
+                                            name="pr_detail"
+                                            value={values.pr_detail}
+                                            onChange={handleChange}
+                                        />
+                                        <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                    </div>
+
+                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                        <AppMultiSelect
+                                            label="Item"
+                                            name="items"
+                                            value={values.items.map(item => item.item_id)} // Display only item IDs
+                                            options={itemOptions}
+                                            onChange={handleItemSelection}
+                                            isMulti={true}
+                                            style={{
+                                                maxHeight: '300px',  // Set a maximum height for the dropdown
+                                                overflowY: 'auto',   // Enable scrolling
+                                            }}
+                                        />
+
+                                        {errors.items && (
+                                            <>
+                                                {values.items && values.items.length == 0 ?
+                                                    <div style={{ color: 'red', fontSize: "13px" }}>Item is required</div>
+                                                    :
+                                                    <></>
+                                                }
+                                                {/* {console.log(values.items && values.items)} */}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
-
-                                <div>
-                                    <AppInput
-                                        type="textarea"
-                                        label="Shipment Address"
-                                        name="shipment_address"
-                                        value={values.shipment_address}
-                                        onChange={handleChange}
-                                    />
-                                    <ErrorMessage name="shipment_address" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                </div>
-
-                                <div>
-                                    <AppInput
-                                        type="textarea"
-                                        label="PR Detail"
-                                        name="pr_detail"
-                                        value={values.pr_detail}
-                                        onChange={handleChange}
-                                    />
-                                    <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                </div>
-
                             </div>
                             {values.items.map((item, index) => {
                                 const itemDetail = itemdetails.find(detail => detail.id === item.item_id);
@@ -586,7 +583,7 @@ const EditPurchaseRequisition = () => {
                                                 <div className="md:col-span-4">
                                                     <AppInput
                                                         type="number"
-                                                        label="Price"
+                                                        label="Price per unit"
                                                         name={`items[${index}].price`}
                                                         value={item.price}
                                                         onChange={(e) => handleItemFieldChange(index, 'price', e.target.value)}

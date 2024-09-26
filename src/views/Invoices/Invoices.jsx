@@ -111,6 +111,7 @@ const Invoice = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
+                        title="view"
                         onClick={() => navigate(`/invoice_detail?invoice_id=${row.id}`)}
                     />
 

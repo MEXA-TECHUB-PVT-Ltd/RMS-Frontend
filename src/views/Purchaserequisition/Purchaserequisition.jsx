@@ -201,6 +201,7 @@ const Purchaserequisition = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
+                        title="view"
                         onClick={() => navigate(`/purchase-requisition-details?pr_id=${row.id}`)}
                     />
                     {row?.status !== "ACCEPTED" && (
@@ -208,6 +209,7 @@ const Purchaserequisition = () => {
                             <FaTrash
                                 size={15}
                                 className="text-red-600 flex-none"
+                                title="delete"
                                 onClick={() => {
                                     setCurrentId(row.id);
                                     setDeleteModal(true);
@@ -216,7 +218,8 @@ const Purchaserequisition = () => {
                             <FaEdit
                                 size={20}
                                 className={`${textColor}`}
-                                onClick={() => navigate(`/edit-purchase-requisition?pr_id=${row.id}`)}
+                                title="edit"
+                                onClick={() => navigate(`/edit-puchase-requisition?pr_id=${row.id}`)}
                             />
                         </>
                     )}

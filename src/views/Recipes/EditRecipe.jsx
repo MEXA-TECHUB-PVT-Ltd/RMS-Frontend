@@ -19,6 +19,7 @@ import { getItems } from "../../app/features/Item/getItemSlice";
 import ErrorMessage from "../../components/form/ErrorMessage";
 import AppMultiSelect from "../../components/form/AppMultiSelect";
 import imagePlaceholder from "../../assets/item_image.png";
+import Modal from "../../components/modal/Modal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -48,6 +49,8 @@ const EditRecipe = () => {
             });
         }
     }, [recipedetails]);
+
+    const theme = useSelector((state) => state.theme);
 
     const onCnicBackDrop = useCallback((acceptedFile) => {
         setCnic_back_img(
@@ -87,14 +90,15 @@ const EditRecipe = () => {
         }
     }, [recipeId]);
 
-    useEffect(() => {
-        fetchCategories();
-        fetchVendors();
-        fetchItems();
-        fetchItemByID(recipedetails && recipedetails?.items?.map((item) => (item?.item_id)));
-    }, [recipeId]);
+    const unitOptions = [
+        { label: 'g', value: '1b8dd607-41df-4380-bed6-55f33a575a43' },
+        // { label: 'Kilogram (kg)', value: 'kg' },
+        // { label: 'Milligram (mg)', value: 'mg' },
+        // { label: 'Liter (L)', value: 'L' },
+        // { label: 'Milliliter (ml)', value: 'ml' }
+    ];
 
-    const [unitOptions, setUnitOptions] = useState("");
+    const [unit, setUnit] = useState("");
     const fetchunitCategory = async (unit) => {
         try {
             const response = await fetch(`${API_URL}/units/get?category=${unit}`);
@@ -102,17 +106,14 @@ const EditRecipe = () => {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
+
+            // Format units for select options
             const formattedUnits = data.result.units.map((unit) => ({
                 value: unit.id,
                 label: unit.unit
             }));
 
-            const foundCategoryName = formattedUnits.find(item => item?.label === recipedetails?.measuring_unit);
-            setUnitOptions(foundCategoryName);
-
-            console.log("foundCategoryName", foundCategoryName);
-
-            return formattedUnits;
+            return formattedUnits;  // Return formatted unit options
         } catch (error) {
             console.log(error.message);
             return [];
@@ -129,11 +130,12 @@ const EditRecipe = () => {
                 }
                 const data = await response.json();
 
+                // Fetch unit options based on unit category
                 const unitOptions = await fetchunitCategory(data?.result?.unit_category);
 
                 return {
                     ...data.result,
-                    unitOptions // Store the unit options with each item
+                    unitOptions // Store unit options with the item details
                 };
             });
 
@@ -209,6 +211,16 @@ const EditRecipe = () => {
             console.log(error.message);
         }
     };
+
+    useEffect(() => {
+        fetchCategories();
+        fetchVendors();
+        fetchItems();
+        if (recipedetails && recipedetails?.items) {
+            const itemIds = recipedetails.items.map((item) => item?.item_id);
+            fetchItemByID(itemIds);
+        }
+    }, [recipeId, recipedetails]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop: onCnicBackDrop,
@@ -477,6 +489,59 @@ const EditRecipe = () => {
 
     //////////////////// 
 
+    const [addCategoryModal, setAddCategoryModal] = useState(false);
+
+    const validationSchemaCategory = Yup.object({
+        category_name: Yup.string().required('Category name is required')
+    });
+
+    const handleAddCategory = async (data) => {
+        console.log(data);
+        setIsLoading(true);
+        setTimeout(() => {
+
+            const InsertAPIURL = `${API_URL}/category/create`;
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            };
+
+            let Data = {};
+
+            Data = {
+                category_name: data.category_name
+            };
+
+            fetch(InsertAPIURL, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(Data),
+            })
+                .then(response => response.json())
+                .then(response => {
+                    console.log(response);
+                    setIsLoading(false);
+                    if (response.success) {
+                        setIsLoading(false);
+                        toast.success(response.message);
+                        fetchCategories();
+                        setAddCategoryModal(false);
+                        resetForm();
+                    } else {
+                        setIsLoading(false);
+                        toast.error(response.error.message);
+                    }
+                })
+                .catch(error => {
+                    setIsLoading(false);
+                    toast.error(error, {
+                        position: toast.POSITION.BOTTOM_CENTER
+                    });
+                });
+
+        }, 3000);
+    }
+
     return (
         <>
             <div
@@ -484,7 +549,7 @@ const EditRecipe = () => {
             >
                 <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
 
-                <h1 className="modal-item-heading">Add Recipe</h1>
+                <h1 className="modal-item-heading">Edit Recipe</h1>
             </div>
 
             <Formik
@@ -504,12 +569,23 @@ const EditRecipe = () => {
                     preparation_instructions: recipedetails?.preparation_instructions ?? "",
                     serving_details: recipedetails?.serving_details ?? "",
 
-                    items: recipedetails?.items?.map((item) => ({
-                        item_id: item?.item_id ?? "",
-                        quantity: item?.quantity ?? "",
-                        measuring_unit: item?.measuring_unit ?? "",
-                        name: item?.name ?? ""
-                    })) ?? [],
+                    items: recipedetails?.items?.map((item) => {
+                        const itemDetail = itemdetails.find(detail => detail.id === item.item_id);
+                        console.log("Prefilling measuring_unit", {
+                            unit_category: itemDetail?.unit_category,
+                            unitOptions: itemDetail?.unitOptions,
+                            currentUnit: item?.measuring_unit,
+                            matchedOption: itemDetail?.unitOptions.find(option => option.label === item?.measuring_unit)?.value
+                        });
+                        return {
+                            item_id: item?.item_id ?? "",
+                            quantity: item?.quantity ?? "",
+                            measuring_unit: itemDetail?.unit_category === 'quantity'
+                                ? item?.measuring_unit // Direct number for 'quantity' category
+                                : itemDetail?.unitOptions.find(option => option.label === item?.measuring_unit)?.value || '', // For 'mass' or 'volume'
+                            name: item?.name ?? ""
+                        };
+                    }) ?? [],
                     // vendor: [],
                 }}
                 enableReinitialize={true}
@@ -543,7 +619,7 @@ const EditRecipe = () => {
                     const handleItemSelection = (selectedItemIds) => {
                         const updatedItems = selectedItemIds.map((id) => {
                             const existingItem = values.items.find((item) => item.item_id === id);
-                            return existingItem || { item_id: id, quantity: '' };
+                            return existingItem || { item_id: id, quantity: '', measuring_unit: '' }; // Ensure measuring_unit is set
                         });
 
                         setFieldValue('items', updatedItems);
@@ -565,14 +641,40 @@ const EditRecipe = () => {
                                     </div>
 
                                     <div>
-                                        <AppSelect
-                                            label="Category"
-                                            name="category"
-                                            value={values.category}
-                                            options={categoryOptions}
-                                            onChange={handleChange("category")}
-                                        />
-                                        <ErrorMessage name="category" />
+                                        <div className="w-full">
+                                            <label className="block text-sm font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
+                                                Category
+                                            </label>
+
+                                            <div className={`flex items-center border rounded-md overflow-hidden focus-within:${theme.borderColor}`}>
+                                                <select
+                                                    value={values.category}
+                                                    onChange={handleChange("category")}
+                                                    className="app-input flex-1"
+                                                >
+                                                    <option value="">Category</option>
+                                                    {categoryOptions?.map((option) => (
+                                                        <option key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                {/* Add Button */}
+                                                <button
+                                                    type="button"
+                                                    className="bg-blue-500 text-white px-4 py-2 hover:bg-blue-600"
+                                                    onClick={() => {
+                                                        // Handle the Add button click here
+                                                        setAddCategoryModal(true)
+                                                    }}
+                                                >
+                                                    Add
+                                                </button>
+                                            </div>
+
+                                            <ErrorMessage name="category" />
+                                        </div>
                                     </div>
 
                                     <div>
@@ -775,6 +877,7 @@ const EditRecipe = () => {
                                 <div className="grid grid-cols-12 gap-4">
                                     {values.items.map((item, index) => {
                                         const itemDetail = itemdetails.find(detail => detail.id === item.item_id);
+
                                         return (
                                             <div
                                                 key={index}
@@ -795,39 +898,36 @@ const EditRecipe = () => {
                                                     </div>
 
                                                     {/* Quantity Field */}
-
                                                     <div className="col-span-2">
                                                         <AppInput
                                                             type="number"
                                                             label="Quantity"
-                                                            name="quantity"
+                                                            name={`items[${index}].quantity`}
                                                             value={item.quantity}
-                                                            onChange={(e) => handleItemFieldChange(index, 'quantity', e.target.value)}
+                                                            onChange={(e) => setFieldValue(`items[${index}].quantity`, e.target.value)}
                                                         />
                                                         {errors.items?.[index]?.quantity && touched.items?.[index]?.quantity && (
                                                             <div className="text-red-500">{errors.items[index].quantity}</div>
                                                         )}
-
                                                     </div>
 
+                                                    {/* Measuring Unit Field */}
                                                     <div className="col-span-2">
                                                         {itemDetail?.unit_category === 'quantity' ? (
-                                                            // If the unit category is 'quantity', render AppInput
                                                             <AppInput
                                                                 type="number"
                                                                 label="Measuring Unit"
                                                                 name={`items[${index}].measuring_unit`}
                                                                 value={item.measuring_unit}
-                                                                onChange={(e) => handleItemFieldChange(index, 'measuring_unit', e.target.value)}
+                                                                onChange={(e) => setFieldValue(`items[${index}].measuring_unit`, e.target.value)}
                                                             />
                                                         ) : (
-                                                            // Otherwise, render AppSelect
                                                             <AppSelect
                                                                 label="Measuring Unit"
                                                                 name={`items[${index}].measuring_unit`}
                                                                 value={item.measuring_unit}
                                                                 options={itemDetail?.unitOptions || []}
-                                                                onChange={(e) => handleItemFieldChange(index, 'measuring_unit', e.target.value)}
+                                                                onChange={(e) => setFieldValue(`items[${index}].measuring_unit`, e.target.value)}
                                                             />
                                                         )}
                                                         {errors.items?.[index]?.measuring_unit && touched.items?.[index]?.measuring_unit && (
@@ -868,6 +968,54 @@ const EditRecipe = () => {
                     );
                 }}
             </Formik>
+
+            <Modal
+                title={"Add Category"}
+                size="sm"
+                isOpen={addCategoryModal}
+                onClose={() => setAddCategoryModal(false)}
+            >
+
+                <Formik
+                    initialValues={{
+                        category_name: ""
+                    }}
+                    validationSchema={validationSchemaCategory}
+                    onSubmit={handleAddCategory}
+                >
+                    {({ values, handleChange, handleSubmit, setFieldValue, validateField, errors, touched }) => {
+
+                        return (
+                            <Form>
+                                <div className="p-5">
+                                    <AppInput
+                                        type="text"
+                                        label="Category Name"
+                                        name="category_name"
+                                        value={values.category_name}
+                                        onChange={handleChange("category_name")}
+                                    />
+                                    <ErrorMessage name="category_name" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                </div>
+
+                                <div className="flex-end gap-3 mt-10">
+                                    <Button
+                                        title={"Cancel"}
+                                        onClick={() => setAddCategoryModal(false)}
+                                        color={"bg-red-500"}
+                                    />
+                                    <Button
+                                        title={"Add"}
+                                        onClick={handleSubmit}
+                                        spinner={isLoading ? <Spinner size="sm" /> : null}
+                                    />
+                                </div>
+                            </Form>
+                        );
+                    }}
+                </Formik>
+
+            </Modal>
 
         </>
     );

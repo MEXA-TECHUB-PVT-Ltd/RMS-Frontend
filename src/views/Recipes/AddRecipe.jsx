@@ -528,11 +528,10 @@ const AddRecipe = () => {
                                             value={values.recipe_name}
                                             onChange={handleChange}
                                         />
-                                        <ErrorMessage name="recipe_name" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                        <ErrorMessage name="recipe_name" />
                                     </div>
 
                                     <div>
-
                                         <div className="w-full">
                                             <label className="block text-sm font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
                                                 Category
@@ -567,8 +566,6 @@ const AddRecipe = () => {
 
                                             <ErrorMessage name="category" />
                                         </div>
-
-
                                     </div>
 
                                     <div>

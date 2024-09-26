@@ -21,7 +21,7 @@ const AppMultiSelect = ({ value, onChange, options, label, error, isMulti = fals
 
     return (
         <div className="w-full">
-            <label className="block text-sm font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
+            <label className="block text-lg font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
                 {label}
             </label>
             <Select

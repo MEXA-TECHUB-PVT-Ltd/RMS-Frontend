@@ -370,7 +370,7 @@ const EditItem = () => {
             .of(Yup.string().required('Vendor is required'))
             .min(1, 'At least one vendor must be selected')
             .max(10, "Vendors can't be more than 10"),
-        opening_stock: Yup.string().required("Opening stock is required"),
+        opening_stock: Yup.string().required("Stock in hand is required"),
         rate_per_unit: Yup.string().required("Rate per unit is required"),
         re_order_level: Yup.string().nullable(),
         description: Yup.string().nullable()
@@ -533,6 +533,17 @@ const EditItem = () => {
                                         </div>
 
                                         <div>
+                                            <AppSelect
+                                                label="Product Catalog"
+                                                name="catalog"
+                                                value={values.catalog}
+                                                options={catalogOptions}
+                                                onChange={handleCustomChange("catalog")}
+                                            />
+                                            <ErrorMessage name="catalog" />
+                                        </div>
+
+                                        <div>
                                             <AppInput
                                                 type="text"
                                                 label="Name"
@@ -541,17 +552,6 @@ const EditItem = () => {
                                                 onChange={handleCustomChange("name")}
                                             />
                                             <ErrorMessage name="name" />
-                                        </div>
-
-                                        <div>
-                                            <AppSelect
-                                                label="Category"
-                                                name="category"
-                                                value={values.category}
-                                                options={categoryOptions}
-                                                onChange={handleCustomChange("category")}
-                                            />
-                                            <ErrorMessage name="category" />
                                         </div>
 
                                         <div>
@@ -588,17 +588,6 @@ const EditItem = () => {
                                                     />
                                                     <ErrorMessage name="units" />
                                                 </div>
-
-                                                {/* <div>
-                                                    <AppInput
-                                                        type="number"
-                                                        label="Usage Quantity"
-                                                        name="usage_unit"
-                                                        value={values.usage_unit}
-                                                        onChange={handleCustomChange("usage_unit")}
-                                                    />
-                                                    <ErrorMessage name="usage_unit" />
-                                                </div> */}
                                             </>
                                         ) : (
                                             <>
@@ -612,17 +601,6 @@ const EditItem = () => {
                                                     />
                                                     <ErrorMessage name="units" />
                                                 </div>
-
-                                                {/* <div>
-                                                    <AppSelect
-                                                        label="Usage Units"
-                                                        name="usage_unit"
-                                                        value={values.usage_unit}
-                                                        options={unitOptions}
-                                                        onChange={handleCustomChange("usage_unit")}
-                                                    />
-                                                    <ErrorMessage name="usage_unit" />
-                                                </div> */}
                                             </>
                                         )}
                                     </div>
@@ -632,17 +610,16 @@ const EditItem = () => {
 
                                             <div className="col-span-12 sm:col-span-4 md:col-span-4">
                                                 <AppSelect
-                                                    label="Product Catalog"
-                                                    name="catalog"
-                                                    value={values.catalog}
-                                                    options={catalogOptions}
-                                                    onChange={handleCustomChange("catalog")}
+                                                    label="Category"
+                                                    name="category"
+                                                    value={values.category}
+                                                    options={categoryOptions}
+                                                    onChange={handleCustomChange("category")}
                                                 />
-                                                <ErrorMessage name="catalog" />
+                                                <ErrorMessage name="category" />
                                             </div>
 
-
-                                            <div className="col-span-12 sm:col-span-8 md:col-span-8" >
+                                            <div className="col-span-12 sm:col-span-8 md:col-span-8">
                                                 <AppMultiSelect
                                                     label="Preferred Vendor"
                                                     name="vendor"
@@ -734,7 +711,7 @@ const EditItem = () => {
                                         <div>
                                             <AppInput
                                                 type="number"
-                                                label="Opening stock"
+                                                label="Stock in hand"
                                                 name="opening_stock"
                                                 value={values.opening_stock}
                                                 onChange={handleCustomChange("opening_stock")}
@@ -745,7 +722,7 @@ const EditItem = () => {
                                         <div>
                                             <AppInput
                                                 type="number"
-                                                label="Opening stock rate per unit"
+                                                label="Stock rate per unit"
                                                 name="rate_per_unit"
                                                 value={values.rate_per_unit}
                                                 onChange={handleCustomChange("rate_per_unit")}

@@ -108,12 +108,14 @@ const Purchaseorder = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
+                        title="view"
                         onClick={() => navigate(`/puchase-order-details?po_id=${row.purchase_order_id}`)}
                     />
 
                     <FaWindowClose
                         size={15}
                         className="text-red-600 flex-none"
+                        title="cancel order"
                         onClick={() => {
                             setCurrentId(row.purchase_order_id);
                             setCancelModal(true);
