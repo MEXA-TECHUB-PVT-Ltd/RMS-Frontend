@@ -48,14 +48,14 @@ const Invoice = () => {
         //         width: '100px',
         //     },
         // },
-        {
-            name: "Total Items",
-            selector: (row) => row.total_items == null || undefined ? "-" : row.total_items,
-            sortable: true,
-            style: {
-                width: '50px',
-            },
-        },
+        // {
+        //     name: "Total Items",
+        //     selector: (row) => row.total_items == null || undefined ? "-" : row.total_items,
+        //     sortable: true,
+        //     style: {
+        //         width: '50px',
+        //     },
+        // },
         {
             name: "Total Amount",
             selector: (row) => row.total_price == null || undefined ? "-" : <>{`$ ${row.total_price}`}</>,
@@ -101,7 +101,7 @@ const Invoice = () => {
             ),
             sortable: true,
             style: {
-                width: '100px', // Set the width you want
+                width: '50px', // Set the width you want
             },
         },
         {
@@ -111,40 +111,41 @@ const Invoice = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
+                        title="view"
                         onClick={() => navigate(`/invoice_detail?invoice_id=${row.id}`)}
                     />
 
                     <div key={row.id} className="flex-center gap-2 cursor-pointer">
                         <button
-                            onClick={row.status === "Draft" ? () => updateStatus(row) : undefined}
+                            onClick={row.status === "Unpaid" ? () => updateStatus(row) : undefined}
                             style={{
                                 backgroundColor: row.status === "Paid" ? 'lightgray' : 'orange',
                                 color: row.status === "Paid" ? 'gray' : '#ffffff',
                                 fontWeight: "bold",
                                 padding: 7,
                                 borderRadius: "10px",
-                                cursor: row.status === "Draft" ? 'pointer' : 'not-allowed',
-                                opacity: row.status === "Draft" ? 1 : 0.6,
+                                cursor: row.status === "Unpaid" ? 'pointer' : 'not-allowed',
+                                opacity: row.status === "Unpaid" ? 1 : 0.6,
                             }}
-                            disabled={row.status !== "Draft"}
+                            disabled={row.status !== "Unpaid"}
                         >
                             {/* {loading ? <><Spinner size="sm" /> "Send to vendor"</> : "Send to vendor"} */}
                             {loadingApproval[row.id] ? (
                                 <>
                                     <Spinner size="sm" />
-                                    Update Status
+                                    Update Pay Status
                                 </>
                             ) : (
-                                "Update Status"
+                                "Update Pay Status"
                             )}
                         </button>
                     </div>
                 </div >
             ),
             style: {
-                width: '60vh',
+                width: '100px',
             },
-        },
+        } 
     ];
 
     const updateStatus = (row) => {

@@ -79,7 +79,7 @@ const ItemDetails = () => {
                                             <></>
                                         }
                                         <CardItem title={`${itemdetails?.unit_category == "quantity" ? "Quantity" : "Unit"}`} value={itemdetails?.product_units} />
-                                        <CardItem title={`${itemdetails?.unit_category == "quantity" ? "Usage Quantity" : "Usage Unit"}`} value={itemdetails?.usage_unit} />
+                                        {/* <CardItem title={`${itemdetails?.unit_category == "quantity" ? "Usage Quantity" : "Usage Unit"}`} value={itemdetails?.usage_unit} /> */}
                                         <CardItem
                                             title={"Preferred Vendor"}
                                             value={
@@ -105,7 +105,7 @@ const ItemDetails = () => {
                                     <Card style={{ height: "100px" }}>
                                         <CardHeader title={"Inventory Details"} />
                                         <CardItem title={"Stock In Hand"} value={itemdetails?.stock_in_hand} />
-                                        <CardItem title={"Opening Stock Rate"} value={itemdetails?.opening_stock_rate} />
+                                        <CardItem title={"Stock Rate Per Unit"} value={itemdetails?.opening_stock_rate} />
                                         <CardItem title={"Re-order Unit"} value={itemdetails?.reorder_unit} />
                                         <CardItem title={"Description"} value={itemdetails?.inventory_description} />
                                     </Card>

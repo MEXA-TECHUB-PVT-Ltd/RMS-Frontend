@@ -559,7 +559,7 @@ const AddPurchaseReceive = () => {
                                                         value={item.received_quantity}
                                                         onChange={(e) => handleItemFieldChange(index, 'received_quantity', e.target.value)}
                                                     />
-                                                    {errors.items?.[index]?.received_quantity && (
+                                                    {errors.items?.[index]?.received_quantity && touched.items?.[index]?.received_quantity && (
                                                         <div style={{ color: "red", fontSize: "13px" }}>
                                                             {errors.items[index].received_quantity}
                                                         </div>
@@ -569,7 +569,7 @@ const AddPurchaseReceive = () => {
                                                 <div>
                                                     <AppInput
                                                         type="number"
-                                                        label="Price"
+                                                        label="Price per unit"
                                                         name={`items[${index}].price`}
                                                         value={item.price}
                                                         disabled

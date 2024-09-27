@@ -298,14 +298,10 @@ const AddPurchaseRequistion = () => {
                 available_stock: Yup.number().required('Stock in hand is required').typeError('Stock in hand must be a number'),
                 required_quantity: Yup.number().required('Required quantity is required').typeError('Required quantity must be a number'),
                 price: Yup.number().required('Price is required').typeError('Price must be a number'),
-                preferred_vendor_ids: Yup.array()
-                    .of(Yup.string().required('Vendor ID is required')) // Check if individual vendor IDs are required
-                    .min(1, 'Preferred Vendor is required') // Ensures that at least one vendor is selected
-                    .required('Preferred Vendor is required'),
+                preferred_vendor_ids: Yup.array().of(Yup.string()).required('Preferred Vendor is required'),
             })
         ).min(1, 'At least one item is required'),
-
-        vendor: Yup.array().of(Yup.string()).required('At least one vendor is required'),
+        // vendor: Yup.array().of(Yup.string()).required('At least one vendor is required'),
     });
 
     // Function to validate items
@@ -315,7 +311,7 @@ const AddPurchaseRequistion = () => {
             // if (!item.available_stock) errors[`items[${index}].available_stock`] = 'Stock in hand is required';
             if (!item.required_quantity) errors[`items[${index}].required_quantity`] = 'Required quantity is required';
             // if (!item.price) errors[`items[${index}].price`] = 'Price is required';
-            if (!item.preferred_vendor_ids || item.preferred_vendor_ids.length === 0) errors[`items[${index}].preferred_vendor_ids`] = 'Preferred Vendor is required';
+            if (item.preferred_vendor_ids.length === 0) errors[`items[${index}].preferred_vendor_ids`] = 'Preferred Vendor is required';
         });
         return errors;
     };
@@ -414,8 +410,8 @@ const AddPurchaseRequistion = () => {
                             }
                         });
 
-                        const errors = validateItems(updatedItems);
-                        setItemErrors(errors);
+                        // const errors = validateItems(updatedItems);
+                        // setItemErrors(errors);
                     };
 
                     const handlePreferredVendorChange = (index, selectedVendors) => {
@@ -434,16 +430,6 @@ const AddPurchaseRequistion = () => {
                         <Form>
                             <div>
                                 <div className="modal-item-container">
-                                    {/* <div>
-                                        <AppInput
-                                            type="text"
-                                            label="PR Number"
-                                            name="pr_no"
-                                            value={values.pr_no}
-                                            onChange={handleChange}
-                                        />
-                                        <ErrorMessage name="pr_no" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div> */}
 
                                     <div>
                                         <AppSelect
@@ -486,15 +472,6 @@ const AddPurchaseRequistion = () => {
                                         <ErrorMessage name="required_date" component="div" style={{ color: "red", fontSize: "13px" }} />
                                     </div>
                                     <div>
-                                        {/* <AppInput
-                                            type="text"
-                                            label="Shipment Preference"
-                                            name="shipment_pre"
-                                            value={values.shipment_pre}
-                                            onChange={handleChange}
-                                        />
-                                        <ErrorMessage name="shipment_pre" component="div" style={{ color: "red", fontSize: "13px" }} /> */}
-
                                         <AppSelect
                                             label="Shipment Preference"
                                             name="shipment_pre"
@@ -504,51 +481,59 @@ const AddPurchaseRequistion = () => {
                                         />
                                         <ErrorMessage name="shipment_pre" />
                                     </div>
+                                </div>
 
-                                    <div >
-                                        <AppMultiSelect
-                                            label="Item"
-                                            name="items"
-                                            value={values.items.map(item => item.item_id)} // Display only item IDs
-                                            options={itemOptions}
-                                            onChange={handleItemSelection}
-                                            isMulti={true}
-                                        />
+                                <div className="pl-5 pr-5 container mx-auto">
+                                    <div className="grid grid-cols-12 gap-4">
 
-                                        {errors.items && (
-                                            <>
-                                                {values.items && values.items.length == 0 ?
-                                                    <div style={{ color: 'red', fontSize: "13px" }}>Item is required</div>
-                                                    :
-                                                    <></>
-                                                }
-                                                {/* {console.log(values.items && values.items)} */}
-                                            </>
-                                        )}
+                                        <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                            <AppInput
+                                                type="textarea"
+                                                label="Shipment Address"
+                                                name="shipment_address"
+                                                value={values.shipment_address}
+                                                onChange={handleChange}
+                                            />
+                                            <ErrorMessage name="shipment_address" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                        </div>
+
+                                        <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                            <AppInput
+                                                type="textarea"
+                                                label="PR Detail"
+                                                name="pr_detail"
+                                                value={values.pr_detail}
+                                                onChange={handleChange}
+                                            />
+                                            <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                        </div>
+
+                                        <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                            <AppMultiSelect
+                                                label="Item"
+                                                name="items"
+                                                value={values.items.map(item => item.item_id)} // Display only item IDs
+                                                options={itemOptions}
+                                                onChange={handleItemSelection}
+                                                isMulti={true}
+                                                style={{
+                                                    maxHeight: '300px',  // Set a maximum height for the dropdown
+                                                    overflowY: 'auto',   // Enable scrolling
+                                                }}
+                                            />
+
+                                            {errors.items && (
+                                                <>
+                                                    {values.items && values.items.length == 0 ?
+                                                        <div style={{ color: 'red', fontSize: "13px" }}>Item is required</div>
+                                                        :
+                                                        <></>
+                                                    }
+                                                    {/* {console.log(values.items && values.items)} */}
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-
-                                    <div>
-                                        <AppInput
-                                            type="textarea"
-                                            label="Shipment Address"
-                                            name="shipment_address"
-                                            value={values.shipment_address}
-                                            onChange={handleChange}
-                                        />
-                                        <ErrorMessage name="shipment_address" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div>
-
-                                    <div>
-                                        <AppInput
-                                            type="textarea"
-                                            label="PR Detail"
-                                            name="pr_detail"
-                                            value={values.pr_detail}
-                                            onChange={handleChange}
-                                        />
-                                        <ErrorMessage name="pr_detail" component="div" style={{ color: "red", fontSize: "13px" }} />
-                                    </div>
-
                                 </div>
 
                                 {values.items.map((item, index) => {
@@ -609,10 +594,8 @@ const AddPurchaseRequistion = () => {
                                                             value={item.required_quantity}
                                                             onChange={(e) => handleItemFieldChange(index, 'required_quantity', e.target.value)}
                                                         />
-                                                        {itemErrors[`items[${index}].required_quantity`] && (
-                                                            <div style={{ color: "red", fontSize: "13px" }}>
-                                                                {itemErrors[`items[${index}].required_quantity`]}
-                                                            </div>
+                                                        {errors.items?.[index]?.required_quantity && touched.items?.[index]?.required_quantity && (
+                                                            <div className="text-red-500">{errors.items[index].required_quantity}</div>
                                                         )}
                                                     </div>
 
@@ -620,7 +603,7 @@ const AddPurchaseRequistion = () => {
                                                     <div className="md:col-span-4">
                                                         <AppInput
                                                             type="number"
-                                                            label="Price"
+                                                            label="Price per unit"
                                                             name={`items[${index}].price`}
                                                             value={item.price}
                                                             onChange={(e) => handleItemFieldChange(index, 'price', e.target.value)}

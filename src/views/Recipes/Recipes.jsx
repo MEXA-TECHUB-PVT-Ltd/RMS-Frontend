@@ -86,16 +86,19 @@ const Recipes = () => {
                     <FaEye
                         size={20}
                         className="text-eye_black dark:text-eye_white"
+                        title="view"
                         onClick={() => navigate(`/recipe_detail?recipe_id=${row.id}`)}
                     />
                     <FaEdit
                         size={20}
                         className={`${textColor}`}
+                        title="edit"
                         onClick={() => navigate(`/edit_recipe?recipe_id=${row.id}`)}
                     />
                     <FaTrash
                         size={20}
                         className="text-red-600"
+                        title="delete"
                         onClick={() => {
                             setCurrentId(row.id);
                             setDeleteModal(true);

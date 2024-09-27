@@ -25,29 +25,32 @@ const AppInput = ({
       {label && (
         <label
           htmlFor={label}
-          className="block text-sm font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide"
+          className="block text-lg font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide"
         >
           {label}
         </label>
       )}
+      {/* ${theme.borderColor} */}
       <div
-        className={`flex items-center border rounded-md overflow-hidden focus-within:${theme.borderColor}`}
+        className={`flex items-center border rounded-md overflow-hidden`}
       >
         {type === "date" ? (
-          <DatePicker
-            selected={value ? new Date(value) : null} // Convert string to Date object
-            onChange={handleDateChange}
-            dateFormat="MM/dd/yyyy" // Customize date format as needed
-            className="app-input"
-            {...otherProps}
-          />
+          <div className="flex-1">
+            <DatePicker
+              selected={value ? new Date(value) : null} // Convert string to Date object
+              onChange={handleDateChange}
+              dateFormat="MM/dd/yyyy" // Customize date format as needed
+              className="app-input w-full px-3 py-2" // Ensure full width and padding
+              {...otherProps}
+            />
+          </div>
         ) : type === "textarea" ? (
           <textarea
             name={name}
             value={value}
             onChange={onChange}
             {...otherProps}
-            className={`app-input resize-none h-32`} // Customize height and other styles as needed
+            className="app-input resize-none h-32 w-full px-3 py-2" // Ensure textarea takes full width and has padding
           />
         ) : (
           <input
@@ -56,7 +59,7 @@ const AppInput = ({
             value={value}
             onChange={onChange}
             {...otherProps}
-            className={`app-input`}
+            className="app-input w-full px-3 py-2" // Ensure input takes full width and has padding
           />
         )}
         {BtnIcon && (

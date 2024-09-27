@@ -67,7 +67,7 @@ const Purchaseorder = () => {
         {
             name: "Status",
             selector: (row) => (
-                <div style={{ 
+                <div style={{
                     fontWeight: "bold",
                     borderRadius: "50px",
                     backgroundColor: row.status === "DRAFT" ? 'darkblue' :
@@ -108,18 +108,20 @@ const Purchaseorder = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
+                        title="view"
                         onClick={() => navigate(`/puchase-order-details?po_id=${row.purchase_order_id}`)}
                     />
 
                     <FaWindowClose
                         size={15}
                         className="text-red-600 flex-none"
+                        title="cancel order"
                         onClick={() => {
                             setCurrentId(row.purchase_order_id);
                             setCancelModal(true);
                         }}
                     />
-
+                    {/* 
                     {row.status === "DRAFT" && (
                         <FaTrash
                             size={15}
@@ -129,7 +131,7 @@ const Purchaseorder = () => {
                                 setDeleteModal(true);
                             }}
                         />
-                    )}
+                    )} */}
                     <button
                         onClick={row.status === "DRAFT" ? () => sendtovendor(row) : undefined}
                         style={{
@@ -252,7 +254,7 @@ const Purchaseorder = () => {
     const sendtovendor = (row) => {
 
         // console.log(row);
-        // console.log("purchase_requisition_id", row.purchase_requisition_id);
+        console.log("purchase_order_id", row.purchase_order_id);
         // console.log("vendor ids", row?.vendors_ids);
         setLoading(true);
         setTimeout(() => {

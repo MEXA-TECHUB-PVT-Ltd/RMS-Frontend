@@ -11,16 +11,15 @@ function App() {
 
   return (
     <div
-      className={`full ${
-        theme.mode === "dark" && "dark"
-      }  dark:bg-dark_bg_4 bg-white dark:text-dark_text_1`}
+      className={`full ${theme.mode === "dark" && "dark"
+        }  dark:bg-dark_bg_4 bg-white dark:text-dark_text_1`}
     >
       {/* {token ? ( */}
       <>
         <Sidebar />
         <div className={`routes-container ${!theme.isSideBarOpen && "w-full"}`}>
           <Navbar />
-          <div className="main-content">
+          <div className="main-content bg-gray-50 h-full">
             <Router />
           </div>
         </div>

@@ -99,6 +99,7 @@ const Purchasereceive = () => {
                     <FaEye
                         size={15}
                         className="text-eye_black dark:text-eye_white flex-none"
+                        title="view"
                         onClick={() => navigate(`/purchase-receive_details?pr_id=${row.id}`)}
                     />
                     {console.log("posOptions", posOptions)}
@@ -106,6 +107,7 @@ const Purchasereceive = () => {
                         <FaEdit
                             size={20}
                             className={`${textColor}`}
+                            title="edit"
                             onClick={() => navigate(`/edit-purchase-receive?pr_id=${row.id}`)}
                         />
                     )}

@@ -10,11 +10,12 @@ import { getPaymentTerms } from "../../app/features/paymentTerms/getPaymentTermS
 import ErrorMessage from "../../components/form/ErrorMessage";
 import AppSelect from "../../components/form/AppSelect";
 import { useDropzone } from "react-dropzone";
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaChevronLeft, FaCloudUploadAlt } from "react-icons/fa";
 import { addVendor } from "../../app/features/Vendor/addVendorSlice";
 import toast from "react-hot-toast";
 import { Spinner } from "../../components/theme/Loader";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Card from "../../components/card/Card";
 
 const AddVendor = () => {
   const dispatch = useDispatch();
@@ -27,6 +28,8 @@ const AddVendor = () => {
   const { currencies } = useSelector((state) => state?.getCurrency);
   const { payment_terms } = useSelector((state) => state?.getPaymentTerm);
   const { isLoading } = useSelector((state) => state.addVendor);
+  const [searchParams] = useSearchParams();
+  const vendorType = searchParams.get("vendor_type");
 
   const onCnicBackDrop = useCallback((acceptedFile) => {
     setCnic_back_img(
@@ -100,7 +103,7 @@ const AddVendor = () => {
       work_no: data?.cWork_no,
     };
 
-    formData.append("v_type", data?.v_type);
+    formData.append("v_type", vendorType);
     formData.append("provider_type", data?.provider_type);
     formData.append("first_name", data?.first_name || "");
     formData.append("last_name", data?.last_name || "");
@@ -163,355 +166,555 @@ const AddVendor = () => {
     dispatch(getPaymentTerms());
   }, [dispatch]);
 
+  // const [document, setDocument] = useState(null);
+  const [cnicFront, setCnicFront] = useState(null);
+  const [cnicBack, setCnicBack] = useState(null);
+
+  const handleDocumentChange = (event) => {
+    setDocument
+      (event.target.files[0]);
+  };
+
+  const handleCnicFrontChange = (event) => {
+    setCnicFront(event.target.files[0]);
+  };
+
+  const handleCnicBackChange = (event) => {
+    setCnicBack(event.target.files[0]);
+  };
 
   return (
-    <Form
-      initialValues={{
-        v_type: "",
-        provider_type: "",
-        first_name: "",
-        last_name: "",
-        company_name: "",
-        vendor_display_name: "",
-        email: "",
-        phone_no: "",
-        work_no: "",
-        address: "",
-        fax_number: "",
-        state: "",
-        zip_code: "",
-        country: "",
-        city: "",
-        shipping_address: "",
-        currency_id: "",
-        payment_term_id: "",
-        cFirst_name: "",
-        cLast_name: "",
-        cEmail: "",
-        cPhone_no: "",
-        cWork_no: "",
-      }}
-      validationSchema={Yup.object().shape({
-        v_type: Yup.string().required("vendor type is required"),
-        provider_type: Yup.string().required("provider type is required"),
-        company_name: Yup.string().nullable(),
-        vendor_display_name: Yup.string().required(
-          "vendor_display_name is required"
-        ),
-        email: Yup.string()
-          .email("email must be a valid email address")
-          .required("email is required"),
-        phone_no: Yup.string().required("phone_no is required"),
-        work_no: Yup.string().nullable(),
-        country: Yup.string().nullable(),
-        address: Yup.string().required("address is required"),
-        city: Yup.string().nullable(),
-        state: Yup.string().nullable(),
-        zip_code: Yup.string().nullable(),
-        fax_number: Yup.string().nullable(),
-        shipping_address: Yup.string().nullable(),
-        currency_id: Yup.string()
-          .uuid("currency_id must be a valid UUID")
-          .required("currency_id is required"),
-        payment_term_id: Yup.string()
-          .uuid("payment_term_id must be a valid UUID")
-          .required("payment_term_id is required"),
-        contact_person: Yup.string().nullable(),
-      })}
-      onSubmit={handleAddVendor}
-    >
-      {({ values, handleChange, handleSubmit }) => (
-        <>
-          <h1 className="modal-item-heading">Personal Details</h1>
-          <div className="modal-item-container">
-            <div>
-              <AppSelect
-                label="Vendor Type"
-                name={values["v_type"]}
-                value={values["v_type"]}
-                options={vendorOptions}
-                onChange={handleChange("v_type")}
-              />
-              <ErrorMessage name={"v_type"} />
-            </div>
+    <div className="pl-7 pr-7 pt-7 pb-7">
+      <Card >
+        <Form
+          initialValues={{
+            // v_type: "",
+            provider_type: "",
+            first_name: "",
+            last_name: "",
+            company_name: "",
+            vendor_display_name: "",
+            email: "",
+            phone_no: "",
+            work_no: "",
+            address: "",
+            fax_number: "",
+            state: "",
+            zip_code: "",
+            country: "",
+            city: "",
+            shipping_address: "",
+            currency_id: "",
+            payment_term_id: "",
+            cFirst_name: "",
+            cLast_name: "",
+            cEmail: "",
+            cPhone_no: "",
+            cWork_no: "",
+          }}
+          validationSchema={Yup.object().shape({
+            // v_type: Yup.string().required("vendor type is required"),
+            provider_type: Yup.string().required("provider type is required"),
+            company_name: Yup.string().nullable(),
+            vendor_display_name: Yup.string().required(
+              "vendor_display_name is required"
+            ),
+            first_name: Yup.string().required("first_name is required"),
+            last_name: Yup.string().required("last_name is required"),
+            email: Yup.string()
+              .email("email must be a valid email address")
+              .required("email is required"),
+            phone_no: Yup.string().required("phone_no is required"),
+            work_no: Yup.string().nullable(),
+            country: Yup.string().nullable(),
+            address: Yup.string().required("address is required"),
+            city: Yup.string().nullable(),
+            state: Yup.string().nullable(),
+            zip_code: Yup.string().nullable(),
+            fax_number: Yup.string().nullable(),
+            shipping_address: Yup.string().nullable(),
+            currency_id: Yup.string()
+              .uuid("currency_id must be a valid UUID")
+              .required("currency_id is required"),
+            payment_term_id: Yup.string()
+              .uuid("payment_term_id must be a valid UUID")
+              .required("payment_term_id is required"),
+            contact_person: Yup.string().nullable(),
+          })}
+          onSubmit={handleAddVendor}
+        >
+          {({ values, handleChange, handleSubmit }) => (
+            <>
 
-            <div>
-              <AppSelect
-                label="Provider Type"
-                name={values["provider_type"]}
-                value={values["provider_type"]}
-                options={providerOptions}
-                onChange={handleChange("provider_type")}
-              />
-              <ErrorMessage name={"provider_type"} />
-            </div>
+              <div className="pt-2 pb-2 container mx-auto">
+                <div className="grid grid-cols-12 gap-4">
 
-            <AppInput
-              type="text"
-              label="First Name"
-              name={values["first_name"]}
-              value={values["first_name"]}
-              onChange={handleChange("first_name")}
-            />
-            <AppInput
-              type="text"
-              label="Last Name"
-              name={values["last_name"]}
-              value={values["last_name"]}
-              onChange={handleChange("last_name")}
-            />
+                  <div className="col-span-12 sm:col-span-5 md:col-span-5">
+                    <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
+                  </div>
 
-            <AppInput
-              type="text"
-              label="Company Name"
-              name={values["company_name"]}
-              value={values["company_name"]}
-              onChange={handleChange("company_name")}
-            />
+                  <div className="col-span-12 sm:col-span-7 md:col-span-7">
+                    <h1 className="font-bold text-xl text-left">Add Vendor</h1>
+                  </div>
 
-            <div>
-              <AppInput
-                type="text"
-                label="Vendor Display Name"
-                name={values["vendor_display_name"]}
-                value={values["vendor_display_name"]}
-                onChange={handleChange("vendor_display_name")}
-              />
-              <ErrorMessage name={"vendor_display_name"} />
-            </div>
+                  <div className="pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <h1 className="font-bold text-xl">Vendor Identification</h1>
+                  </div>
 
-            <div>
-              <AppInput
-                type="email"
-                label="Email Address"
-                name={values["email"]}
-                value={values["email"]}
-                onChange={handleChange("email")}
-              />
-              <ErrorMessage name={"email"} />
-            </div>
-
-            <AppInput
-              type="number"
-              label="Work Number"
-              name={values["work_no"]}
-              value={values["work_no"]}
-              onChange={handleChange("work_no")}
-            />
-
-            <div>
-              <AppInput
-                type="number"
-                label="Phone Number"
-                name={values["phone_no"]}
-                value={values["phone_no"]}
-                onChange={handleChange("phone_no")}
-              />
-              <ErrorMessage name={"phone_no"} />
-            </div>
-          </div>
-
-          <h1 className="modal-item-heading">Address Details</h1>
-          <div className="modal-item-container">
-            <div>
-              <AppInput
-                type="text"
-                label="Address"
-                name={values["address"]}
-                value={values["address"]}
-                onChange={handleChange("address")}
-              />
-              <ErrorMessage name={"address"} />
-            </div>
-
-            <AppInput
-              type="text"
-              label="Fax Number"
-              name={values["fax_number"]}
-              value={values["fax_number"]}
-              onChange={handleChange("fax_number")}
-            />
-
-            <AppInput
-              type="text"
-              label="State"
-              name={values["state"]}
-              value={values["state"]}
-              onChange={handleChange("state")}
-            />
-
-            <AppInput
-              type="text"
-              label="ZIP Code"
-              name={values["zip_code"]}
-              value={values["zip_code"]}
-              onChange={handleChange("zip_code")}
-            />
-
-            <AppInput
-              type="text"
-              label="Country"
-              name={values["country"]}
-              value={values["country"]}
-              onChange={handleChange("country")}
-            />
-
-            <AppInput
-              type="text"
-              label="City"
-              name={values["city"]}
-              value={values["city"]}
-              onChange={handleChange("city")}
-            />
-
-            <AppInput
-              type="text"
-              label="Shipping Address"
-              name={values["shipping_address"]}
-              value={values["shipping_address"]}
-              onChange={handleChange("shipping_address")}
-            />
-          </div>
-
-          <h1 className="modal-item-heading ">Other Details</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 px-10 py-5 gap-5">
-            <div>
-              <AppSelect
-                label="Currency"
-                name={values["currency_id"]}
-                value={values["currency_id"]}
-                options={currencyOptions}
-                onChange={handleChange("currency_id")}
-              />
-              <ErrorMessage name={"currency_id"} />
-            </div>
-
-            <div>
-              <AppSelect
-                label="Payment Term"
-                name={values["payment_term_id"]}
-                value={values["payment_term_id"]}
-                options={paymentTermOptions}
-                onChange={handleChange("payment_term_id")}
-              />
-              <ErrorMessage name={"payment_term_id"} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-10 py-5 gap-10">
-            <div {...documentRootProps()} className="drag-drop-container">
-              <input {...documentInputProps()} />
-              {isDocumentDrag ? (
-                <div className="drag-drop-subContainer">
-                  Drop your document here
-                </div>
-              ) : (
-                <div>
-                  {document ? (
-                    <div className="text-center">
-                      <p className="font-medium text-base mb-2">
-                        {document.name}
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        No preview available
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <p className="flex-center">
-                        <FaCloudUploadAlt
-                          size={50}
-                          className="text-gray-700 dark:text-dark_text_1"
-                        />
-                      </p>
-                      <p className="font-medium text-base mb-2">
-                        Select or Drop your Document here
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        Accepted formats: PDF
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div {...cnicFrontRootProps()} className="drag-drop-container">
-              <input {...cnicInputProps()} />
-              {isCnicDrag ? (
-                <div className="drag-drop-subContainer">
-                  Drop your Cnic front image here
-                </div>
-              ) : (
-                <div>
-                  {cnic_front_img ? (
-                    <img
-                      src={cnic_front_img.preview}
-                      onLoad={() => {
-                        URL.revokeObjectURL(cnic_front_img.preview);
-                      }}
-                      alt=""
-                      className="w-full h-full object-cover"
+                  <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                    <AppInput
+                      type="text"
+                      label="Vendor Display Name"
+                      name={values["vendor_display_name"]}
+                      value={values["vendor_display_name"]}
+                      onChange={handleChange("vendor_display_name")}
                     />
-                  ) : (
-                    <div className="text-center">
-                      <p className="flex-center">
-                        <FaCloudUploadAlt
-                          size={50}
-                          className="text-gray-700 dark:text-dark_text_1"
-                        />
-                      </p>
-                      <p className="font-medium text-sm mb-2">
-                        Select or Drop your Cnic front image here
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        Accepted formats: JPG , PNG , JPEG
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                    <ErrorMessage name={"vendor_display_name"} />
+                  </div>
 
-            <div {...getRootProps()} className="drag-drop-container">
-              <input {...getInputProps()} />
-              {isDragActive ? (
-                <div className="drag-drop-subContainer">
-                  Drop your Cnic back image here
-                </div>
-              ) : (
-                <div>
-                  {cnic_back_img ? (
-                    <img
-                      src={cnic_back_img.preview}
-                      onLoad={() => {
-                        URL.revokeObjectURL(cnic_back_img.preview);
-                      }}
-                      alt=""
-                      className="w-full h-full object-cover"
+                  <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <h1 className="font-bold text-xl">Company Information</h1>
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="Company Name"
+                      name={values["company_name"]}
+                      value={values["company_name"]}
+                      onChange={handleChange("company_name")}
                     />
-                  ) : (
-                    <div className="text-center">
-                      <p className="flex-center">
-                        <FaCloudUploadAlt
-                          size={50}
-                          className="text-gray-700 dark:text-dark_text_1"
-                        />
-                      </p>
-                      <p className="font-medium text-sm mb-2">
-                        Select or Drop your Cnic back image here
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        Accepted formats: JPG , PNG , JPEG
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+                  </div>
 
-          <h1 className="modal-item-heading ">Contact Person</h1>
+                  {/* <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                <AppSelect
+                  label="Vendor Type"
+                  name={values["v_type"]}
+                  value={values["v_type"]}
+                  options={vendorOptions}
+                  onChange={handleChange("v_type")}
+                />
+                <ErrorMessage name={"v_type"} />
+              </div> */}
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppSelect
+                      label="Provider Type"
+                      name={values["provider_type"]}
+                      value={values["provider_type"]}
+                      options={providerOptions}
+                      onChange={handleChange("provider_type")}
+                    />
+                    <ErrorMessage name={"provider_type"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="Country"
+                      name={values["country"]}
+                      value={values["country"]}
+                      onChange={handleChange("country")}
+                    />
+                  </div>
+
+                  <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <h1 className="text-lg font-bold text-xl">Contact Information</h1>
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="First Name"
+                      name={values["first_name"]}
+                      value={values["first_name"]}
+                      onChange={handleChange("first_name")}
+                    />
+                    <ErrorMessage name={"first_name"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="Last Name"
+                      name={values["last_name"]}
+                      value={values["last_name"]}
+                      onChange={handleChange("last_name")}
+                    />
+                    <ErrorMessage name={"last_name"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="email"
+                      label="Email Address"
+                      name={values["email"]}
+                      value={values["email"]}
+                      onChange={handleChange("email")}
+                    />
+                    <ErrorMessage name={"email"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="number"
+                      label="Phone Number"
+                      name={values["phone_no"]}
+                      value={values["phone_no"]}
+                      onChange={handleChange("phone_no")}
+                    />
+                    <ErrorMessage name={"phone_no"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="Address"
+                      name={values["address"]}
+                      value={values["address"]}
+                      onChange={handleChange("address")}
+                    />
+                    <ErrorMessage name={"address"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="City"
+                      name={values["city"]}
+                      value={values["city"]}
+                      onChange={handleChange("city")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="State"
+                      name={values["state"]}
+                      value={values["state"]}
+                      onChange={handleChange("state")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="ZIP Code"
+                      name={values["zip_code"]}
+                      value={values["zip_code"]}
+                      onChange={handleChange("zip_code")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="Fax Number"
+                      name={values["fax_number"]}
+                      value={values["fax_number"]}
+                      onChange={handleChange("fax_number")}
+                    />
+                  </div>
+
+                  <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <h1 className="text-lg font-bold text-xl">Additional Information</h1>
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppSelect
+                      label="Currency"
+                      name={values["currency_id"]}
+                      value={values["currency_id"]}
+                      options={currencyOptions}
+                      onChange={handleChange("currency_id")}
+                    />
+                    <ErrorMessage name={"currency_id"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppSelect
+                      label="Payment Term"
+                      name={values["payment_term_id"]}
+                      value={values["payment_term_id"]}
+                      options={paymentTermOptions}
+                      onChange={handleChange("payment_term_id")}
+                    />
+                    <ErrorMessage name={"payment_term_id"} />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="number"
+                      label="Work Number"
+                      name={values["work_no"]}
+                      value={values["work_no"]}
+                      onChange={handleChange("work_no")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                    <AppInput
+                      type="textarea"
+                      label="Shipping Address"
+                      name={values["shipping_address"]}
+                      value={values["shipping_address"]}
+                      onChange={handleChange("shipping_address")}
+                    />
+                  </div>
+
+                  <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <h1 className="text-lg font-bold text-xl">Documents</h1>
+                  </div>
+
+                  <div {...documentRootProps()} className="drag-drop-container col-span-12 sm:col-span-4 md:col-span-4">
+                    <input {...documentInputProps()} />
+                    {isDocumentDrag ? (
+                      <div className="drag-drop-subContainer">
+                        Drop your document here
+                      </div>
+                    ) : (
+                      <div>
+                        {document ? (
+                          <div className="text-center">
+                            <p className="font-medium text-base mb-2">
+                              {document.name}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              No preview available
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <p className="flex-center">
+                              <FaCloudUploadAlt
+                                size={50}
+                                className="text-gray-700 dark:text-dark_text_1"
+                              />
+                            </p>
+                            <p className="font-medium text-base mb-2">
+                              Select or Drop your Document here
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Accepted formats: PDF
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div {...cnicFrontRootProps()} className="drag-drop-container col-span-12 sm:col-span-4 md:col-span-4">
+                    <input {...cnicInputProps()} />
+                    {isCnicDrag ? (
+                      <div className="drag-drop-subContainer">
+                        Drop your Cnic front image here
+                      </div>
+                    ) : (
+                      <div>
+                        {cnic_front_img ? (
+                          <img
+                            src={cnic_front_img.preview}
+                            onLoad={() => {
+                              URL.revokeObjectURL(cnic_front_img.preview);
+                            }}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center">
+                            <p className="flex-center">
+                              <FaCloudUploadAlt
+                                size={50}
+                                className="text-gray-700 dark:text-dark_text_1"
+                              />
+                            </p>
+                            <p className="font-medium text-sm mb-2">
+                              Select or Drop your Cnic front image here
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Accepted formats: JPG , PNG , JPEG
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div {...getRootProps()} className="drag-drop-container col-span-12 sm:col-span-4 md:col-span-4">
+                    <input {...getInputProps()} />
+                    {isDragActive ? (
+                      <div className="drag-drop-subContainer">
+                        Drop your Cnic back image here
+                      </div>
+                    ) : (
+                      <div>
+                        {cnic_back_img ? (
+                          <img
+                            src={cnic_back_img.preview}
+                            onLoad={() => {
+                              URL.revokeObjectURL(cnic_back_img.preview);
+                            }}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center">
+                            <p className="flex-center">
+                              <FaCloudUploadAlt
+                                size={50}
+                                className="text-gray-700 dark:text-dark_text_1"
+                              />
+                            </p>
+                            <p className="font-medium text-sm mb-2">
+                              Select or Drop your Cnic back image here
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Accepted formats: JPG , PNG , JPEG
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <h1 className="text-lg font-bold text-xl">Contact Person</h1>
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="Fist Name"
+                      name={values["cFirst_name"]}
+                      value={values["cFirst_name"]}
+                      onChange={handleChange("cFirst_name")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="text"
+                      label="Last Name"
+                      name={values["cLast_name"]}
+                      value={values["cLast_name"]}
+                      onChange={handleChange("cLast_name")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="email"
+                      label="Email Address"
+                      name={values["cEmail"]}
+                      value={values["cEmail"]}
+                      onChange={handleChange("cEmail")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="number"
+                      label="Phone Number"
+                      name={values["cPhon_no"]}
+                      value={values["cPhone_no"]}
+                      onChange={handleChange("cPhone_no")}
+                    />
+                  </div>
+
+                  <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                    <AppInput
+                      type="number"
+                      label="Work Number"
+                      name={values["cWork_no"]}
+                      value={values["cWork_no"]}
+                      onChange={handleChange("cWork_no")}
+                    />
+                  </div>
+
+                  <div className="flex-center pt-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <div className="my-5 w-52">
+                      <Button
+                        onClick={isLoading ? "" : handleSubmit}
+                        title={"Submit"}
+                        width={true}
+                        spinner={isLoading ? <Spinner size="sm" /> : null}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Document Input */}
+                  {/* <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="document">
+                  Document
+                </label>
+                <input
+                  id="document"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleDocumentChange}
+                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-300 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                />
+                {document && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-300 rounded h-2 relative">
+                      <div className="bg-green-500 h-2 rounded" style={{ width: '100%' }}></div>
+                    </div>
+                    <p className="text-sm mt-1">Document: {document.name}</p>
+                  </div>
+                )}
+              </div> */}
+
+                  {/* CNIC Front Input */}
+                  {/* <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="cnic-front">
+                  CNIC Front
+                </label>
+                <input
+                  id="cnic-front"
+                  type="file"
+                  accept=".jpg,.png,.jpeg"
+                  onChange={handleCnicFrontChange}
+                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-300 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                />
+                {cnicFront && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-300 rounded h-2 relative">
+                      <div className="bg-green-500 h-2 rounded" style={{ width: '100%' }}></div>
+                    </div>
+                    <p className="text-sm mt-1">CNIC Front: {cnicFront.name}</p>
+                  </div>
+                )}
+              </div> */}
+
+                  {/* CNIC Back Input */}
+                  {/* <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="cnic-back">
+                  CNIC Back
+                </label>
+                <input
+                  id="cnic-back"
+                  type="file"
+                  accept=".jpg,.png,.jpeg"
+                  onChange={handleCnicBackChange}
+                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-300 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                />
+                {cnicBack && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-300 rounded h-2 relative">
+                      <div className="bg-green-500 h-2 rounded" style={{ width: '100%' }}></div>
+                    </div>
+                    <p className="text-sm mt-1">CNIC Back: {cnicBack.name}</p>
+                  </div>
+                )}
+              </div> */}
+
+                </div>
+              </div>
+
+
+
+              {/* <h1 className="modal-item-heading ">Contact Person</h1>
           <div className="modal-item-container">
             <AppInput
               type="text"
@@ -562,10 +765,12 @@ const AddVendor = () => {
                 spinner={isLoading ? <Spinner size="sm" /> : null}
               />
             </div>
-          </div>
-        </>
-      )}
-    </Form>
+          </div> */}
+            </>
+          )}
+        </Form>
+      </Card>
+    </div>
   );
 };
 
