@@ -25,6 +25,7 @@ export const handleChangeRowsPerPage = (setRowsPerPage) => (newRowsPerPage) => {
 
 export const handleSearch = (setSearchQuery) => (query) => {
   setSearchQuery(query);
+  console.log("query", query);
 };
 
 export const handleDelete =

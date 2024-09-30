@@ -621,10 +621,10 @@ const EditVendor = () => {
                   </div>
 
                   <div className="flex-center pt-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <div className="my-5 w-52">
+                    <div className="sticky bottom-0 w-full">
                       <Button
                         onClick={isLoading ? "" : handleSubmit}
-                        title={"Edit"}
+                        title={"Update"}
                         width={true}
                         spinner={isLoading ? <Spinner size="sm" /> : null}
                       />

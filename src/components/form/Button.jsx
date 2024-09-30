@@ -14,9 +14,8 @@ const Button = ({
   return (
     <div
       onClick={onClick}
-      className={`px-4 py-1 ${color ? color : theme?.bgColor} ${
-        width && "w-full py-2"
-      } rounded text-white cursor-pointer flex-center gap-2`}
+      className={`h-10 px-4 py-1 ${color ? color : "bg-blue-950"} ${width && "w-full py-2"
+        } rounded-lg text-white cursor-pointer flex-center gap-2`}
     >
       {spinner && spinner}
 

@@ -16,6 +16,9 @@ import toast from "react-hot-toast";
 import { Spinner } from "../../components/theme/Loader";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Card from "../../components/card/Card";
+import Modal from "../../components/modal/Modal";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const AddVendor = () => {
   const dispatch = useDispatch();
@@ -30,6 +33,8 @@ const AddVendor = () => {
   const { isLoading } = useSelector((state) => state.addVendor);
   const [searchParams] = useSearchParams();
   const vendorType = searchParams.get("vendor_type");
+
+  const theme = useSelector((state) => state.theme);
 
   const onCnicBackDrop = useCallback((acceptedFile) => {
     setCnic_back_img(
@@ -166,22 +171,57 @@ const AddVendor = () => {
     dispatch(getPaymentTerms());
   }, [dispatch]);
 
-  // const [document, setDocument] = useState(null);
-  const [cnicFront, setCnicFront] = useState(null);
-  const [cnicBack, setCnicBack] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [addCategoryModal, setAddCategoryModal] = useState(false);
 
-  const handleDocumentChange = (event) => {
-    setDocument
-      (event.target.files[0]);
-  };
+  const validationSchemaCategory = Yup.object({
+    category_name: Yup.string().required('Category name is required')
+  });
 
-  const handleCnicFrontChange = (event) => {
-    setCnicFront(event.target.files[0]);
-  };
+  const handleAddCategory = async (data, { resetForm }) => {
+    console.log(data);
+    setLoading(true);
+    setTimeout(() => {
 
-  const handleCnicBackChange = (event) => {
-    setCnicBack(event.target.files[0]);
-  };
+      const InsertAPIURL = `${API_URL}/currency/create`;
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+
+      let Data = {};
+
+      Data = {
+        currency: data.currency
+      };
+
+      fetch(InsertAPIURL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(Data),
+      })
+        .then(response => response.json())
+        .then(response => {
+          console.log(response);
+          setLoading(false);
+          if (response.success) {
+            setLoading(false);
+            toast.success(response.message);
+            dispatch(getCurrencies());
+            setAddCategoryModal(false);
+            resetForm();
+          } else {
+            setLoading(false);
+            toast.error(response.error.message);
+          }
+        })
+        .catch(error => {
+          setLoading(false);
+          toast.error(error.message);
+        });
+
+    }, 3000);
+  }
 
   return (
     <div className="pl-7 pr-7 pt-7 pb-7">
@@ -285,17 +325,6 @@ const AddVendor = () => {
                       onChange={handleChange("company_name")}
                     />
                   </div>
-
-                  {/* <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                <AppSelect
-                  label="Vendor Type"
-                  name={values["v_type"]}
-                  value={values["v_type"]}
-                  options={vendorOptions}
-                  onChange={handleChange("v_type")}
-                />
-                <ErrorMessage name={"v_type"} />
-              </div> */}
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
                     <AppSelect
@@ -422,14 +451,52 @@ const AddVendor = () => {
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                    <AppSelect
+                    {/* <AppSelect
                       label="Currency"
                       name={values["currency_id"]}
                       value={values["currency_id"]}
                       options={currencyOptions}
                       onChange={handleChange("currency_id")}
                     />
-                    <ErrorMessage name={"currency_id"} />
+                    <ErrorMessage name={"currency_id"} /> */}
+
+                    <div className="w-full">
+                      <label className="block text-lg font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
+                        Currency
+                      </label>
+
+                      <div className={`flex items-center border rounded-md overflow-hidden focus-within:${theme.borderColor}`}>
+                        <select
+                          value={values.currency_id}
+                          onChange={handleChange("currency_id")}
+                          className="app-input flex-1"
+                        >
+                          <option value="">Currency</option>
+                          {currencyOptions?.map((option) => (
+                            <>
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            </>
+                          ))}
+
+                        </select>
+
+                        {/* Add Button */}
+                        <button
+                          type="button"
+                          className="bg-blue-950 text-white px-4 py-2"
+                          onClick={() => {
+                            setAddCategoryModal(true)
+                          }}
+                        >
+                          Add
+                        </button>
+                      </div>
+
+                      <ErrorMessage name="currency_id" />
+                    </div>
+
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
@@ -632,11 +699,11 @@ const AddVendor = () => {
                     />
                   </div>
 
-                  <div className="flex-center pt-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <div className="my-5 w-52">
+                  <div className="flex-center pt-10 col-span-12 sm:col-span-12 md:col-span-12">
+                    <div className="sticky bottom-0 w-full">
                       <Button
                         onClick={isLoading ? "" : handleSubmit}
-                        title={"Submit"}
+                        title={"Add"}
                         width={true}
                         spinner={isLoading ? <Spinner size="sm" /> : null}
                       />
@@ -711,65 +778,63 @@ const AddVendor = () => {
 
                 </div>
               </div>
-
-
-
-              {/* <h1 className="modal-item-heading ">Contact Person</h1>
-          <div className="modal-item-container">
-            <AppInput
-              type="text"
-              label="Fist Name"
-              name={values["cFirst_name"]}
-              value={values["cFirst_name"]}
-              onChange={handleChange("cFirst_name")}
-            />
-
-            <AppInput
-              type="text"
-              label="Last Name"
-              name={values["cLast_name"]}
-              value={values["cLast_name"]}
-              onChange={handleChange("cLast_name")}
-            />
-
-            <AppInput
-              type="email"
-              label="Email Address"
-              name={values["cEmail"]}
-              value={values["cEmail"]}
-              onChange={handleChange("cEmail")}
-            />
-
-            <AppInput
-              type="number"
-              label="Phone Number"
-              name={values["cPhon_no"]}
-              value={values["cPhone_no"]}
-              onChange={handleChange("cPhone_no")}
-            />
-
-            <AppInput
-              type="number"
-              label="Work Number"
-              name={values["cWork_no"]}
-              value={values["cWork_no"]}
-              onChange={handleChange("cWork_no")}
-            />
-          </div>
-          <div className="flex-center">
-            <div className="my-5 w-52">
-              <Button
-                onClick={isLoading ? "" : handleSubmit}
-                title={"Submit"}
-                width={true}
-                spinner={isLoading ? <Spinner size="sm" /> : null}
-              />
-            </div>
-          </div> */}
             </>
           )}
         </Form>
       </Card>
+
+      <Modal
+        title={"Add Currency"}
+        size="sm"
+        isOpen={addCategoryModal}
+        onClose={() => setAddCategoryModal(false)}
+      >
+        <Form
+          initialValues={{
+            currency: "",
+          }}
+          validationSchema={Yup.object().shape({
+            currency: Yup.string().required("Currency is required"),
+
+          })}
+          onSubmit={handleAddCategory}
+        >
+          {({ values, handleChange, handleSubmit }) => (
+            <>
+
+              <div className="p-2 container mx-auto">
+                <div className="grid grid-cols-12 gap-4">
+
+                  <div className="pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <AppInput
+                      type="text"
+                      label="Currency"
+                      name={values["currency"]}
+                      value={values["currency"]}
+                      onChange={handleChange("currency")}
+                    />
+                    <ErrorMessage name={"currency"} />
+                  </div>
+
+                  <div className="flex-center col-span-12 sm:col-span-12 md:col-span-12">
+                    <div className="sticky bottom-0 w-full">
+                      <Button
+                        onClick={loading ? "" : handleSubmit}
+                        title={"Add"}
+                        width={true}
+                        spinner={loading ? <Spinner size="sm" /> : null}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </>
+          )}
+        </Form>
+
+      </Modal>
+
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import routes from "../navigation/vertical";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -9,27 +9,35 @@ const SidebarLayout = () => {
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState(null);
 
+  // Effect to set the initial active menu but not trigger any content display
+  useEffect(() => {
+    // Find the route that contains a submenu and initialize activeMenu without affecting content
+    routes.forEach((item) => {
+      if (item.submenu && item.submenu.some(sub => location.pathname !== sub.path)) {
+        setActiveMenu(item.id); // Set the active menu to open the submenu initially
+      }
+    });
+  }, []); // Empty dependency array to ensure it runs only on the initial render
+
   const toggleMenu = (id) => {
     setActiveMenu(activeMenu === id ? null : id);
   };
 
   const handleLinkClick = (id) => {
-    console.log("id", id)
     if (id) {
-      setActiveMenu(activeMenu === id ? null : id);// Close submenu if a different tab is clicked
+      setActiveMenu(activeMenu === id ? null : id); // Close submenu if a different tab is clicked
     }
   };
 
   return (
     <div>
       {routes.map((item, i) => {
-        const isActive = location.pathname === item.path ||
-          (item.submenu && item.submenu.some(sub => location.pathname === sub.path));
+        const isActive = location.pathname === item.path;
 
         return (
           <div key={i}>
             <div
-              className={`link-container ${isActive && `${theme.bgColor} text-white drop-shadow-md`
+              className={`link-container ${isActive && `bg-slate-100 text-blue-950 font-bold`
                 }`}
             >
               <Link
@@ -39,7 +47,7 @@ const SidebarLayout = () => {
               >
                 <div className="flex items-center">
                   <p>{item.icon}</p>
-                  <h1 className="text-sm ml-1">{item.title}</h1>
+                  <h1 className="text-xs font-semibold ml-4">{item.title}</h1>
                 </div>
                 {item.submenu && (
                   <span

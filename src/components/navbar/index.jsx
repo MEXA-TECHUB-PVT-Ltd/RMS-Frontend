@@ -56,14 +56,14 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="navbar">
+    <div className="bg-gray-50 navbar">
       <div className="flex-center gap-2">
         <FaBars
           size={20}
           className={`${!theme.isSideBarOpen ? "block" : "hidden"} `}
           onClick={handleToggleSidebar}
         />
-        {theme.mode === "light" ? (
+        {/* {theme.mode === "light" ? (
           <FaRegMoon
             onClick={handleToggleTheme}
             className="text-light_text_1"
@@ -75,19 +75,19 @@ const Navbar = () => {
             color="white"
             size={20}
           />
-        )}
+        )} */}
       </div>
       <div className="flex-center gap-2 relative">
         <CiSettings
           size={23}
           className="hover:opacity-60"
-          onClick={() => setShowSetting(true)}
+        // onClick={() => setShowSetting(true)}
         />
         <div
           className="flex-center gap-2"
           onClick={() => setIsActiveDropDown((prev) => !prev)}
         >
-          <div className={`avatar ${theme.bgColor}`}>A</div>
+          <div className={`avatar bg-blue-950`}>A</div>
           <h1 className="avatar-text">Admin</h1>
         </div>
 

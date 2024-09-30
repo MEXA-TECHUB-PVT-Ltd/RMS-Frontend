@@ -8,14 +8,15 @@ const DataTable = ({ columns, data, ...rest }) => {
   const customStyles = {
     header: {
       style: {
-        backgroundColor:
-          theme === "dark"
-            ? "var(--primary-background)"
-            : "var(--header-background)",
+        // backgroundColor:
+        //   theme === "dark"
+        //     ? "var(--primary-background)"
+        //     : "var(--header-background)", // Change the header background color
         color:
-          theme === "dark" ? "var(--primary-text)" : "var(--secondary-text)",
+          theme === "dark" ? "#FFFFFF" : "", // Change header text color
         fontSize: "1.2rem",
-        fontWeight: "bold",
+        fontWeight: "medium",
+        // borderBottom: "2px solid var(--border-color)",
       },
     },
     headRow: {
@@ -23,8 +24,8 @@ const DataTable = ({ columns, data, ...rest }) => {
         backgroundColor:
           theme === "dark"
             ? "var(--primary-background)"
-            : "var(--header-background)",
-        borderBottom: "2px solid var(--border-color)",
+            : "#F8FAFC", // Change the head row background color
+        // borderBottom: "2px solid var(--border-color)",
         paddingLeft: ".7em",
         fontSize: "1.3em",
       },
@@ -32,9 +33,8 @@ const DataTable = ({ columns, data, ...rest }) => {
     headCells: {
       style: {
         color:
-          theme === "dark" ? "var(--primary-text)" : "var(--secondary-text)",
+          theme === "dark" ? "#CCCCCC" : "#6B7280", // Change column heading text color
         padding: "12px",
-        borderRight: "1px solid var(--border-color)",
       },
     },
     rows: {
@@ -46,7 +46,7 @@ const DataTable = ({ columns, data, ...rest }) => {
         color:
           theme === "dark" ? "var(--primary-text)" : "var(--secondary-text)",
         padding: "12px",
-        borderBottom: "1px solid var(--border-color)",
+        // borderBottom: "1px solid var(--border-color)",
         "&:last-of-type": {
           borderBottom: "0",
         },
@@ -63,7 +63,7 @@ const DataTable = ({ columns, data, ...rest }) => {
             : "var(--secondary-background)",
         color:
           theme === "dark" ? "var(--primary-text)" : "var(--secondary-text)",
-        borderTop: "1px solid var(--border-color)",
+        // borderTop: "1px solid var(--border-color)",
         padding: "12px",
       },
     },
@@ -76,7 +76,6 @@ const DataTable = ({ columns, data, ...rest }) => {
         color:
           theme === "dark" ? "var(--primary-text)" : "var(--secondary-text)",
         padding: "12px",
-        borderBottom: "1px solid var(--border-color)",
       },
     },
   };
@@ -90,10 +89,10 @@ const DataTable = ({ columns, data, ...rest }) => {
   };
 
   return (
-    <div>
+    <div className="border border-gray-300 dark:border-gray-700 rounded-lg"> {/* Table border */}
       <Table
         customStyles={customStyles}
-        className="border dark:border-none font-bold"
+        className="font-bold"
         columns={columns}
         noDataComponent={<NoData />}
         data={data}

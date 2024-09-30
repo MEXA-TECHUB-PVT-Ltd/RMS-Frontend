@@ -6,12 +6,12 @@ const API_URL = import.meta.env.VITE_API_URL;
 export const getVendors = createAsyncThunk(
   "vendor/getVendors",
   async (
-    { page = 1, limit = 10, payment_term_id, search, v_type },
+    { page = 1, limit = 10, payment_term_name, provider_type, search_company_name, search_vendor_display_name, v_type },
     { rejectWithValue }
   ) => {
     try {
       const { data } = await axios.get(`${API_URL}/vendor`, {
-        params: { page, limit, payment_term_id, search, v_type },
+        params: { page, limit, payment_term_name, provider_type, search_company_name, search_vendor_display_name, v_type },
       });
       return data;
     } catch (error) {
