@@ -5,9 +5,9 @@ import Card from "../../components/card/Card";
 import { useDispatch, useSelector } from "react-redux";
 import { getItems } from "../../app/features/Item/getItemSlice";
 import CardItem from "../../components/card/CardItem";
-
-const API_URL = import.meta.env.VITE_API_URL;
-
+import item_type from "../../assets/item_type.png";
+import filter from "../../assets/filter.png";
+import delete_icon from "../../assets/delete_icon.png";
 import {
     handleChangePage,
     handleChangeRowsPerPage,
@@ -20,6 +20,9 @@ import Modal from "../../components/modal/Modal";
 import Button from "../../components/form/Button";
 import { Spinner } from "../../components/theme/Loader";
 import toast from "react-hot-toast";
+import VendorTypeModal from "../../components/modal/VendorTypeModal";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Item = () => {
     const dispatch = useDispatch();
@@ -27,7 +30,9 @@ const Item = () => {
     const [viewType, setViewType] = useState("");
     const [currentId, setCurrentId] = useState(null);
     const [deleteModal, setDeleteModal] = useState(false);
+    const [vendorTypeModal, setVendorTypeModal] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [filterModal, setFilterModal] = useState(false);
 
     const { textColor } = useSelector((state) => state.theme);
     // const { isLoading } = useSelector((state) => state.deleteVendor); 
@@ -72,19 +77,19 @@ const Item = () => {
             selector: (row) => (
                 <div className="flex-center gap-2 cursor-pointer">
                     <FaEye
-                        size={20}
+                        size={15}
                         className="text-eye_black dark:text-eye_white"
                         title="view"
                         onClick={() => navigate(`/item-detail?item_id=${row.id}`)}
                     />
                     <FaEdit
-                        size={20}
+                        size={15}
                         className={`${textColor}`}
                         title="edit"
                         onClick={() => navigate(`/edit-item?item_id=${row.id}`)}
                     />
                     <FaTrash
-                        size={20}
+                        size={15}
                         className="text-red-600"
                         title="delete"
                         onClick={() => {
@@ -96,6 +101,11 @@ const Item = () => {
             ),
         },
     ];
+
+    // Handle row click
+    const handleRowClick = (row) => {
+        navigate(`/item-detail?item_id=${row.id}`);
+    };
 
     const onDelete = () => {
 
@@ -147,6 +157,10 @@ const Item = () => {
     // const { isLoading, items, pagination, error } = useSelector((state) => state.getItem || {});
     const { isLoading, items, pagination, error } = useSelector((state) => state.getItem);
 
+    const handleAddItem = (text) => {
+        navigate(`/add-item?item_type=${text}`)
+    }
+
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchQuery, setSearchQuery] = useState('');
@@ -176,8 +190,10 @@ const Item = () => {
                 buttonIcon={FaPlus}
                 viewType={viewType}
                 onViewType={setViewType}
+                filtericon={filter}
+                filterOnClick={() => setFilterModal(true)}
                 onSearch={handleSearch}
-                onAddButtonClick={() => navigate("/add-item")}
+                onAddButtonClick={() => setVendorTypeModal(true)}
             />
 
             {/* <div className="py-5 px-10"> */}
@@ -189,6 +205,8 @@ const Item = () => {
                         <DataTable
                             data={items}
                             columns={itemColumns}
+                            onRowClicked={handleRowClick}
+                            className="cursor-pointer"
                             pagination
                             paginationServer
                             paginationTotalRows={pagination.totalItems}
@@ -200,17 +218,53 @@ const Item = () => {
                             {items.map((item) => {
                                 return (
                                     <Card key={item?.id}>
-                                        <CardItem title={"Type"} value={item?.type} />
-                                        <CardItem title={"Name"} value={item?.name} />
-                                        <CardItem
-                                            title={"Category"}
-                                            value={item?.product_category}
-                                        />
-                                        <CardItem
-                                            title={"Catalog"}
-                                            value={item?.product_catalog}
-                                        />
-                                        <CardItem title={"Opening Stock"} value={item?.stock_in_hand} />
+                                        <div className="cursor-pointer flex-between">
+                                            <div className="flex gap-3">
+                                                {item?.image ? (
+                                                    <a href={item?.image} target="_blank">
+                                                        <img src={item?.image} alt="item" className="rounded-sm text-center mx-auto w-10" />
+                                                    </a>
+                                                ) : null}
+
+                                                <h1 onClick={() => navigate(`/item-detail?item_id=${item.id}`)} style={{ fontWeight: "bold", color: "#353535", fontSize: "20px" }}>
+                                                    {item?.name}
+                                                </h1>
+                                            </div>
+
+                                            <div>
+                                                <div className="flex-center gap-2 cursor-pointer">
+                                                    <FaEdit
+                                                        size={15}
+                                                        className={`${textColor}`}
+                                                        title="edit"
+                                                        onClick={() => navigate(`/edit-item?item_id=${item.id}`)}
+                                                    />
+                                                    <FaTrash
+                                                        size={15}
+                                                        className="text-red-600"
+                                                        title="delete"
+                                                        onClick={() => {
+                                                            setCurrentId(item.id);
+                                                            setDeleteModal(true);
+                                                        }}
+                                                    />
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                        <div className="cursor-pointer" onClick={() => navigate(`/item-detail?item_id=${item.id}`)}>
+                                            <CardItem title={"Type"} value={item?.type} />
+                                            <CardItem
+                                                title={"Category"}
+                                                value={item?.product_category}
+                                            />
+                                            <CardItem
+                                                title={"Catalog"}
+                                                value={item?.product_catalog}
+                                            />
+                                            <CardItem title={"Opening Stock"} value={item?.stock_in_hand} />
+                                        </div>
                                     </Card>
                                 );
                             })}
@@ -225,23 +279,80 @@ const Item = () => {
                 isOpen={deleteModal}
                 onClose={() => setDeleteModal(false)}
             >
-                <h1 className="flex-start text-base font-semibold">
-                    Are you sure want to delete this item?{" "}
-                </h1>
+                <div className="flex-col items-center">
+                    <img src={delete_icon} className="mb-6 w-20 mx-auto" />
 
-                <div className="flex-end gap-3 mt-5">
+                    <h1 className="text-center mx-auto text-base font-semibold">
+                        Are you sure want to delete this item?{" "}
+                    </h1>
+
+                </div>
+
+                <div className="flex-center gap-3 mt-10 mb-3">
                     <Button
                         title={"Cancel"}
                         onClick={() => setDeleteModal(false)}
-                        color={"bg-red-500"}
+                        color={"bg-slate-50"}
+                        borderColor
+                        textColor={"text-slate-950"}
                     />
                     <Button
                         title={"Delete"}
-                        onClick={loading ? "" : () => onDelete(currentId)}
-                        spinner={loading ? <Spinner size="sm" /> : null}
+                        onClick={isLoading ? "" : () => onDelete(currentId)}
+                        spinner={isLoading ? <Spinner size="sm" /> : null}
+                        color={"bg-red-500"}
                     />
                 </div>
             </Modal>
+
+            {/* vendor type */}
+            <VendorTypeModal
+                size="sm"
+                isOpen={vendorTypeModal}
+                onClose={() => setVendorTypeModal(false)}
+            >
+                <div className="flex flex-col items-center "> {/* Added flex-col and items-center for centering */}
+
+                    <img src={item_type} alt="Item Type" className="mb-3 mx-auto w-20" /> {/* Added mx-auto to center the image */}
+
+                    <p className="text-center font-bold mb-3" style={{ fontSize: "25px" }}>
+                        Item Type
+                    </p> {/* Title text */}
+
+                    <p
+                        className="text-center text-base font-medium mb-3 mx-auto"
+                        style={{ width: '90%', color: 'gray' }}  // Applied custom width and color
+                    >
+                        Please choose whether you are adding a Product or a Service to proceed.{" "}
+                    </p> {/* Added custom width and ensured the container is centered */}
+
+                    <div className="flex gap-3 mt-3">
+                        <button
+                            style={{
+                                width: "90px",
+                                border: "1px solid black",
+                                borderRadius: "10px",
+                                padding: "8px",
+                            }}
+                            onClick={() => handleAddItem("PRODUCT")}
+                        >
+                            Product
+                        </button>
+                        <button
+                            style={{
+                                width: "90px",
+                                border: "1px solid black",
+                                borderRadius: "10px",
+                                padding: "8px",
+                            }}
+                            onClick={isLoading ? "" : () => handleAddItem("SERVICE")}
+                        >
+                            Service
+                        </button>
+                    </div>
+                </div>
+            </VendorTypeModal>
+
         </div>
     );
 };

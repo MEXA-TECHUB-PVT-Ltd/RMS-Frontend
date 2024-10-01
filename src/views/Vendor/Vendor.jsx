@@ -7,6 +7,7 @@ import { getVendors } from "../../app/features/Vendor/getVendorSlice";
 import CardItem from "../../components/card/CardItem";
 import vendor_type from "../../assets/vendor_type.png";
 import filter from "../../assets/filter.png";
+import delete_icon from "../../assets/delete_icon.png";
 
 import {
   handleChangePage,
@@ -249,7 +250,7 @@ const Vendor = () => {
   ];
 
   return (
-    <> 
+    <>
 
       <div className="my-5">
         <Header
@@ -396,20 +397,29 @@ const Vendor = () => {
           isOpen={deleteModal}
           onClose={() => setDeleteModal(false)}
         >
-          <h1 className="flex-start text-base font-semibold">
-            Are you sure want to delete this vendor?{" "}
-          </h1>
 
-          <div className="flex-end gap-3 mt-5">
+          <div className="flex-col items-center">
+            <img src={delete_icon} className="mb-6 w-20 mx-auto" />
+
+            <h1 className="text-center mx-auto text-base font-semibold">
+              Are you sure want to delete this vendor?{" "}
+            </h1>
+
+          </div>
+
+          <div className="flex-center gap-3 mt-10 mb-3">
             <Button
               title={"Cancel"}
               onClick={() => setDeleteModal(false)}
-              color={"bg-red-500"}
+              color={"bg-slate-50"}
+              borderColor
+              textColor={"text-slate-950"}
             />
             <Button
               title={"Delete"}
               onClick={isLoading ? "" : () => onDelete(currentId)}
               spinner={isLoading ? <Spinner size="sm" /> : null}
+              color={"bg-red-500"}
             />
           </div>
         </Modal>
@@ -430,7 +440,7 @@ const Vendor = () => {
             </p> {/* Title text */}
 
             <p
-              className="text-center text-base font-semibold mb-3 mx-auto"
+              className="text-center text-base font-medium mb-3 mx-auto"
               style={{ width: '90%', color: 'gray' }}  // Applied custom width and color
             >
               Please choose whether you're adding a Supplier or a Store to proceed{" "}

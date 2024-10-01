@@ -68,6 +68,7 @@ const Header = ({
                 onClick={filterOnClick}
                 src={filtericon}
                 alt="Filter Icon"
+                title="Filter"
                 className="w-5 cursor-pointer mb-2 sm:mb-0 sm:ml-2"
               />
             ) : null}
