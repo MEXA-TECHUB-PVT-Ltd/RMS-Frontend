@@ -28,23 +28,21 @@ const Modal = ({ title, onClose, isOpen, size = "sm", children }) => {
       isOpen={isOpen}
       onRequestClose={onClose}
       style={customStyles}
-      className={`${
-        theme === "dark" && "dark"
-      } fixed h-auto max-h-[97vh] w-[95%] ${
-        size === "sm"
+      className={`${theme === "dark" && "dark"
+        } fixed h-auto max-h-[97vh] w-[95%] ${size === "sm"
           ? "md:w-[35%]"
           : size === "md"
-          ? "md:w-[60%]"
-          : size === "lg"
-          ? "md:w-[97%]"
-          : "md:w-[35%]"
-      }  bg-white dark:bg-dark_bg_4 shadow-sm outline-none rounded p-3 dark:text-dark_text_1  overflow-auto`}
+            ? "md:w-[60%]"
+            : size === "lg"
+              ? "md:w-[97%]"
+              : "md:w-[35%]"
+        }  bg-white dark:bg-dark_bg_4 shadow-sm outline-none rounded-lg p-3 dark:text-dark_text_1  overflow-auto`}
     >
       <div className="flex-between cursor-pointer">
         <h1 className="font-semibold">{title}</h1>
         <p
           onClick={onClose}
-          className="cursor-pointer text-3xl float-end  hover:opacity-90 hover:text-red-500  dark:text-dark_text_1"
+          className="cursor-pointer text-3xl float-end hover:opacity-90 hover:text-red-500  dark:text-dark_text_1"
         >
           <IoClose />
         </p>

@@ -17,10 +17,13 @@ import { getVendorDetails } from "../../app/features/Vendor/getVendorSlice";
 import { updateVendor } from "../../app/features/Vendor/updateVendorSlice";
 import * as Yup from "yup";
 import Card from "../../components/card/Card";
+import Modal from "../../components/modal/Modal";
 
 const EditVendor = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const theme = useSelector((state) => state.theme);
 
   const { currencies } = useSelector((state) => state?.getCurrency);
   const { payment_terms } = useSelector((state) => state?.getPaymentTerm);
@@ -170,6 +173,103 @@ const EditVendor = () => {
     }
   }, [vendor]);
 
+  // currency
+  const [loading, setLoading] = useState(false);
+  const [addCurrencyModal, setAddCurrencyModal] = useState(false);
+
+  const handleAddCategory = async (data, { resetForm }) => {
+    console.log(data);
+    setLoading(true);
+    setTimeout(() => {
+
+      const InsertAPIURL = `${API_URL}/currency/create`;
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+
+      let Data = {};
+
+      Data = {
+        currency: data.currency
+      };
+
+      fetch(InsertAPIURL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(Data),
+      })
+        .then(response => response.json())
+        .then(response => {
+          console.log(response);
+          setLoading(false);
+          if (response.success) {
+            setLoading(false);
+            toast.success(response.message);
+            dispatch(getCurrencies());
+            setAddCurrencyModal(false);
+            resetForm();
+          } else {
+            setLoading(false);
+            toast.error(response.error.message);
+          }
+        })
+        .catch(error => {
+          setLoading(false);
+          toast.error(error.message);
+        });
+
+    }, 3000);
+  }
+
+  // payment term
+  const [addpaymenttermyModal, setAddpaymenttermyModal] = useState(false);
+
+  const handleAddPaymentTerm = async (data, { resetForm }) => {
+    console.log(data);
+    setLoading(true);
+    setTimeout(() => {
+
+      const InsertAPIURL = `${API_URL}/payment-term/create`;
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+
+      let Data = {};
+
+      Data = {
+        payment_term_name: data.payment_term
+      };
+
+      fetch(InsertAPIURL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(Data),
+      })
+        .then(response => response.json())
+        .then(response => {
+          console.log(response);
+          setLoading(false);
+          if (response.success) {
+            setLoading(false);
+            toast.success(response.message);
+            dispatch(getPaymentTerms());
+            setAddpaymenttermyModal(false);
+            resetForm();
+          } else {
+            setLoading(false);
+            toast.error(response.error.message);
+          }
+        })
+        .catch(error => {
+          setLoading(false);
+          toast.error(error.message);
+        });
+
+    }, 3000);
+  }
+
   return vendor && !vendorLoading ? (
     <div className="pl-7 pr-7 pt-7 pb-7">
       <Card>
@@ -234,16 +334,16 @@ const EditVendor = () => {
               <div className="pt-2 pb-2 container mx-auto">
                 <div className="grid grid-cols-12 gap-4">
 
-                  <div className="col-span-12 sm:col-span-5 md:col-span-5">
+                  <div className="text-slate-950 col-span-12 sm:col-span-5 md:col-span-5">
                     <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
                   </div>
 
                   <div className="col-span-12 sm:col-span-7 md:col-span-7">
-                    <h1 className="font-bold text-xl text-left">Edit Vendor</h1>
+                    <h1 className="text-slate-950 font-bold text-xl text-left">Edit Vendor</h1>
                   </div>
 
                   <div className="pb-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <h1 className="font-bold text-xl">Vendor Identification</h1>
+                    <h1 className="text-slate-950 font-bold text-xl">Vendor Identification</h1>
                   </div>
 
                   <div className="col-span-12 sm:col-span-12 md:col-span-12">
@@ -258,7 +358,7 @@ const EditVendor = () => {
                   </div>
 
                   <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <h1 className="font-bold text-xl">Company Information</h1>
+                    <h1 className="text-slate-950 font-bold text-xl">Company Information</h1>
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
@@ -304,7 +404,7 @@ const EditVendor = () => {
                   </div>
 
                   <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <h1 className="text-lg font-bold text-xl">Contact Information</h1>
+                    <h1 className="text-slate-950 text-lg font-bold text-xl">Contact Information</h1>
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
@@ -401,29 +501,85 @@ const EditVendor = () => {
                   </div>
 
                   <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <h1 className="text-lg font-bold text-xl">Additional Information</h1>
+                    <h1 className="text-slate-950 text-lg font-bold text-xl">Additional Information</h1>
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                    <AppSelect
-                      label="Currency"
-                      name={values["currency_id"]}
-                      value={values["currency_id"]}
-                      options={currencyOptions}
-                      onChange={handleChange("currency_id")}
-                    />
-                    <ErrorMessage name={"currency_id"} />
+                    <div className="w-full">
+                      <label className="block text-lg font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
+                        Currency
+                      </label>
+
+                      <div className={`flex items-center border rounded-md overflow-hidden focus-within:${theme.borderColor}`}>
+                        <select
+                          value={values.currency_id}
+                          onChange={handleChange("currency_id")}
+                          className="app-input flex-1"
+                        >
+                          <option value="">Currency</option>
+                          {currencyOptions?.map((option) => (
+                            <>
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            </>
+                          ))}
+
+                        </select>
+
+                        {/* Add Button */}
+                        <button
+                          type="button"
+                          className="bg-blue-950 text-white px-4 py-2"
+                          onClick={() => {
+                            setAddCurrencyModal(true)
+                          }}
+                        >
+                          Add
+                        </button>
+                      </div>
+
+                      <ErrorMessage name="currency_id" />
+                    </div>
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                    <AppSelect
-                      label="Payment Term"
-                      name={values["payment_term_id"]}
-                      value={values["payment_term_id"]}
-                      options={paymentTermOptions}
-                      onChange={handleChange("payment_term_id")}
-                    />
-                    <ErrorMessage name={"payment_term_id"} />
+                    <div className="w-full">
+                      <label className="block text-lg font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
+                        Payment Term
+                      </label>
+
+                      <div className={`flex items-center border rounded-md overflow-hidden focus-within:${theme.borderColor}`}>
+                        <select
+                          value={values.payment_term_id}
+                          onChange={handleChange("payment_term_id")}
+                          className="app-input flex-1"
+                        >
+                          <option value="">Payment Term</option>
+                          {paymentTermOptions?.map((option) => (
+                            <>
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            </>
+                          ))}
+
+                        </select>
+
+                        {/* Add Button */}
+                        <button
+                          type="button"
+                          className="bg-blue-950 text-white px-4 py-2"
+                          onClick={() => {
+                            setAddpaymenttermyModal(true)
+                          }}
+                        >
+                          Add
+                        </button>
+                      </div>
+
+                      <ErrorMessage name="payment_term_id" />
+                    </div>
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
@@ -447,7 +603,7 @@ const EditVendor = () => {
                   </div>
 
                   <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <h1 className="text-lg font-bold text-xl">Documents</h1>
+                    <h1 className="text-slate-950 text-lg font-bold text-xl">Documents</h1>
                   </div>
 
                   <div {...documentRootProps()} className="drag-drop-container col-span-12 sm:col-span-4 md:col-span-4">
@@ -567,7 +723,7 @@ const EditVendor = () => {
                   </div>
 
                   <div className="pt-5 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <h1 className="text-lg font-bold text-xl">Contact Person</h1>
+                    <h1 className="text-slate-950 text-lg font-bold text-xl">Contact Person</h1>
                   </div>
 
                   <div className="col-span-12 sm:col-span-6 md:col-span-6">
@@ -703,6 +859,113 @@ const EditVendor = () => {
           )}
         </Form>
       </Card>
+
+      {/* currency */}
+      <Modal
+        title={"Add Currency"}
+        size="sm"
+        isOpen={addCurrencyModal}
+        onClose={() => setAddCurrencyModal(false)}
+      >
+        <Form
+          initialValues={{
+            currency: "",
+          }}
+          validationSchema={Yup.object().shape({
+            currency: Yup.string().required("Currency is required"),
+
+          })}
+          onSubmit={handleAddCategory}
+        >
+          {({ values, handleChange, handleSubmit }) => (
+            <>
+
+              <div className="p-2 container mx-auto">
+                <div className="grid grid-cols-12 gap-4">
+
+                  <div className="pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <AppInput
+                      type="text"
+                      label="Currency"
+                      name={values["currency"]}
+                      value={values["currency"]}
+                      onChange={handleChange("currency")}
+                    />
+                    <ErrorMessage name={"currency"} />
+                  </div>
+
+                  <div className="flex-center col-span-12 sm:col-span-12 md:col-span-12">
+                    <div className="sticky bottom-0 w-full">
+                      <Button
+                        onClick={loading ? "" : handleSubmit}
+                        title={"Add"}
+                        width={true}
+                        spinner={loading ? <Spinner size="sm" /> : null}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </>
+          )}
+        </Form>
+
+      </Modal>
+
+      {/* paymentTerm */}
+      <Modal
+        title={"Add Payment Term"}
+        size="sm"
+        isOpen={addpaymenttermyModal}
+        onClose={() => setAddpaymenttermyModal(false)}
+      >
+        <Form
+          initialValues={{
+            payment_term: "",
+          }}
+          validationSchema={Yup.object().shape({
+            payment_term: Yup.string().required("Payment Term is required"),
+
+          })}
+          onSubmit={handleAddPaymentTerm}
+        >
+          {({ values, handleChange, handleSubmit }) => (
+            <>
+
+              <div className="p-2 container mx-auto">
+                <div className="grid grid-cols-12 gap-4">
+
+                  <div className="pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                    <AppInput
+                      type="text"
+                      label="Payment Term"
+                      name={values["payment_term"]}
+                      value={values["payment_term"]}
+                      onChange={handleChange("payment_term")}
+                    />
+                    <ErrorMessage name={"payment_term"} />
+                  </div>
+
+                  <div className="flex-center col-span-12 sm:col-span-12 md:col-span-12">
+                    <div className="sticky bottom-0 w-full">
+                      <Button
+                        onClick={loading ? "" : handleSubmit}
+                        title={"Add"}
+                        width={true}
+                        spinner={loading ? <Spinner size="sm" /> : null}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </>
+          )}
+        </Form>
+
+      </Modal>
+
     </div>
   ) : (
     <Spinner size="lg" />

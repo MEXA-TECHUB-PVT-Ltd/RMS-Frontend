@@ -14,6 +14,7 @@ import { Spinner } from "../../components/theme/Loader";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ErrorMessage from "../../components/form/ErrorMessage";
 import AppMultiSelect from "../../components/form/AppMultiSelect";
+import Card from "../../components/card/Card";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -178,25 +179,22 @@ const EditItem = () => {
 
         let Data = {};
 
-        if (data.item_type === "SERVICE") {
+        if (itemdetails?.type === "SERVICE") {
             Data = {
-                type: data.item_type,
                 name: data.name,
                 vendor_ids: data.vendor,
                 description: data.service_description
             };
         } else if (data.unit_category == "quantity") {
             Data = {
-                type: data.item_type,
                 name: data.name,
                 product_category: data.category,
                 unit_category: data.unit_category,
-                quantity_units: data.quantity_unit,// "packs of bread",
+                quantity_units: data.quantity_unit,
                 product_units: data.units,
-                // usage_unit: data.usage_unit,
                 product_catalog: data.catalog,
                 vendor_ids: data.vendor,
-                image: cnic_back_img ? (cnic_back_img instanceof File ? response.data.url : cnic_back_img.preview) : null,
+                image: null, // Placeholder for now, image will be updated after upload if necessary
                 stock_in_hand: transformToNull(data.opening_stock),
                 opening_stock_rate: transformToNull(data.rate_per_unit),
                 reorder_unit: transformToNull(data.re_order_level),
@@ -204,16 +202,14 @@ const EditItem = () => {
             };
         } else {
             Data = {
-                type: data.item_type,
                 name: data.name,
                 product_category: data.category,
                 quantity_units: data.quantity_unit,
                 product_units: data.units,
                 unit_category: data.unit_category,
-                // usage_unit: data.usage_unit,
                 product_catalog: data.catalog,
                 vendor_ids: data.vendor,
-                image: cnic_back_img ? (cnic_back_img instanceof File ? response.data.url : cnic_back_img.preview) : null,
+                image: null, // Placeholder for now, image will be updated after upload if necessary
                 stock_in_hand: transformToNull(data.opening_stock),
                 opening_stock_rate: transformToNull(data.rate_per_unit),
                 reorder_unit: transformToNull(data.re_order_level),
@@ -221,135 +217,83 @@ const EditItem = () => {
             };
         }
 
-        if (!cnic_back_img) {
+        const updateItem = async (imageUrl) => {
+            if (imageUrl) {
+                Data.image = imageUrl;
+            }
+
             setIsLoading(true);
-            setTimeout(() => {
+
+            try {
                 const InsertAPIURL = `${API_URL}/item/update?id=${itemId}`;
                 const headers = {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 };
 
-                fetch(InsertAPIURL, {
+                const response = await fetch(InsertAPIURL, {
                     method: 'PUT',
                     headers: headers,
                     body: JSON.stringify(Data),
-                })
-                    .then(response => response.json())
-                    .then(response => {
-                        console.log(response);
-                        setIsLoading(false);
-                        if (response.success) {
-                            toast.success(response.message);
-                            navigate("/items");
-                            resetForm();
-                        } else {
-                            toast.error(response.error.message);
-                        }
-                    })
-                    .catch(error => {
-                        setIsLoading(false);
-                        toast.error(error, {
-                            position: toast.POSITION.BOTTOM_CENTER,
-                        });
-                    });
-            }, 3000);
+                });
+
+                const result = await response.json();
+                setIsLoading(false);
+
+                if (result.success) {
+                    toast.success(result.message);
+                    navigate("/items");
+                    resetForm();
+                } else {
+                    toast.error(result.error.message);
+                }
+            } catch (error) {
+                setIsLoading(false);
+                toast.error(error.message, {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+            }
+        };
+
+        // Image upload logic
+        if (!cnic_back_img) {
+            // No image to upload, directly update item
+            await updateItem(null);
         } else if (cnic_back_img instanceof File) {
+            // Image is a new File, upload it first
             setIsLoading(true);
-            setTimeout(() => {
+
+            try {
                 const formData = new FormData();
                 formData.append("image", cnic_back_img);
 
-                const InsertAPIURL = `${API_URL}/file/upload`;
-
-                fetch(InsertAPIURL, {
+                const uploadURL = `${API_URL}/file/upload`;
+                const uploadResponse = await fetch(uploadURL, {
                     method: 'POST',
                     body: formData,
-                })
-                    .then(response => response.json())
-                    .then(response => {
-                        if (response.success) {
-                            Data.image = response.data.url;
+                });
 
-                            const InsertAPIURL = `${API_URL}/item/update?id=${itemId}`;
-                            const headers = {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                            };
+                const uploadResult = await uploadResponse.json();
 
-                            fetch(InsertAPIURL, {
-                                method: 'PUT',
-                                headers: headers,
-                                body: JSON.stringify(Data),
-                            })
-                                .then(response => response.json())
-                                .then(response => {
-                                    console.log(response);
-                                    setIsLoading(false);
-                                    if (response.success) {
-                                        toast.success(response.message);
-                                        navigate("/items");
-                                        resetForm();
-                                    } else {
-                                        toast.error(response.error.message);
-                                    }
-                                })
-                                .catch(error => {
-                                    setIsLoading(false);
-                                    toast.error(error, {
-                                        position: toast.POSITION.BOTTOM_CENTER,
-                                    });
-                                });
-                        }
-                    })
-                    .catch(error => {
-                        setIsLoading(false);
-                        toast.error(error, {
-                            position: toast.POSITION.BOTTOM_CENTER,
-                        });
-                    });
-            }, 3000);
+                if (uploadResult.success) {
+                    await updateItem(uploadResult.data.url);
+                } else {
+                    throw new Error(uploadResult.error.message);
+                }
+            } catch (error) {
+                setIsLoading(false);
+                toast.error(error.message, {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+            }
         } else {
-            setIsLoading(true);
-            setTimeout(() => {
-                Data.image = cnic_back_img.preview;
-
-                const InsertAPIURL = `${API_URL}/item/update?id=${itemId}`;
-                const headers = {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                };
-
-                fetch(InsertAPIURL, {
-                    method: 'PUT',
-                    headers: headers,
-                    body: JSON.stringify(Data),
-                })
-                    .then(response => response.json())
-                    .then(response => {
-                        console.log(response);
-                        setIsLoading(false);
-                        if (response.success) {
-                            toast.success(response.message);
-                            navigate("/items");
-                            resetForm();
-                        } else {
-                            toast.error(response.error.message);
-                        }
-                    })
-                    .catch(error => {
-                        setIsLoading(false);
-                        toast.error(error, {
-                            position: toast.POSITION.BOTTOM_CENTER,
-                        });
-                    });
-            }, 3000);
+            // Use existing image preview
+            await updateItem(cnic_back_img.preview);
         }
     };
 
-
     const validationSchemaService = Yup.object().shape({
-        item_type: Yup.string().required("Item type is required"),
+        // item_type: Yup.string().required("Item type is required"),
         name: Yup.string().required("Name is required"),
         vendor: Yup.array()
             .of(Yup.string().required('Vendor is required'))
@@ -359,7 +303,7 @@ const EditItem = () => {
     });
 
     const baseProductValidationSchema = Yup.object().shape({
-        item_type: Yup.string().required("Item type is required"),
+        // item_type: Yup.string().required("Item type is required"),
         category: Yup.string().required("Category is required"),
         name: Yup.string().required("Name is required"),
         unit_category: Yup.string().required("Unit category is required"),
@@ -378,9 +322,9 @@ const EditItem = () => {
 
 
     const getValidationSchema = (itemType, unitCategory) => {
-        if (itemType === 'SERVICE') {
+        if (itemType?.type === 'SERVICE') {
             return validationSchemaService;
-        } else if (itemType === 'PRODUCT') {
+        } else if (itemType?.type === 'PRODUCT') {
             if (unitCategory === 'quantity') {
                 // Add additional validation for quantity_unit if unitCategory is "quantity"
                 return baseProductValidationSchema.shape({
@@ -421,356 +365,349 @@ const EditItem = () => {
     const paddingLeftRight = windowWidth < 600 ? 0 : 300;
 
     return (
-        <Formik
-            initialValues={{
-                item_type: itemdetails?.type ?? "",
-                category: category?.id ?? "",
-                name: itemdetails?.name ?? "",
-                unit_category: itemdetails?.unit_category ?? "",
-                units: unit?.value || itemdetails?.product_units || "",  // Use .value to ensure the ID is passed
-                // usage_unit: usage_unit?.value || itemdetails?.usage_unit || "",
+        <div className="pl-7 pr-7 pt-7 pb-7">
+            <Card>
+                <Formik
+                    initialValues={{
+                        // item_type: itemdetails?.type ?? "",
+                        category: category?.id ?? "",
+                        name: itemdetails?.name ?? "",
+                        unit_category: itemdetails?.unit_category ?? "",
+                        units: unit?.value || itemdetails?.product_units || "",  // Use .value to ensure the ID is passed
+                        // usage_unit: usage_unit?.value || itemdetails?.usage_unit || "",
 
-                quantity_unit: itemdetails?.quantity_units ?? "",
+                        quantity_unit: itemdetails?.quantity_units ?? "",
 
-                // usage_unit: usage_unit?.id ?? "",
-                catalog: catalog?.value ?? "",
-                // vendor: vendor?.id ?? "",
-                vendor: itemdetails?.vendors?.map((vendor) => vendor?.id) || [],
-                opening_stock: itemdetails?.stock_in_hand ?? "",
-                rate_per_unit: itemdetails?.opening_stock_rate ?? "",
-                re_order_level: itemdetails?.reorder_unit ?? "",
-                description: itemdetails?.inventory_description ?? "",
-                service_description: itemdetails?.description ?? ""
-            }
-            }
-            enableReinitialize={true}
-            validationSchema={Yup.lazy(values => getValidationSchema(values.item_type, values.unit_category))}
-            onSubmit={handleUpdateItem}
-        >
-            {({ values, handleChange, handleSubmit, setFieldValue, isSubmitting }) => {
-                const handleCustomChange = (name) => (event) => {
-                    const { value } = event.target;
-                    handleChange(event); // Update Formik state
-                    setFieldValue(name, value); // Explicitly set Formik field value
-                    if (name === 'unit_category') {
-                        setUnit_Category(value); // Update local state
-                        fetchUnits(value);
+                        // usage_unit: usage_unit?.id ?? "",
+                        catalog: catalog?.value ?? "",
+                        // vendor: vendor?.id ?? "",
+                        vendor: itemdetails?.vendors?.map((vendor) => vendor?.id) || [],
+                        opening_stock: itemdetails?.stock_in_hand ?? "",
+                        rate_per_unit: itemdetails?.opening_stock_rate ?? "",
+                        re_order_level: itemdetails?.reorder_unit ?? "",
+                        description: itemdetails?.inventory_description ?? "",
+                        service_description: itemdetails?.description ?? ""
                     }
-                };
-                return (
-                    <Form>
-                        <div
-                            className="flex justify-start items-center gap-2 pb-5 w-fit"
-                        >
-                            <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
+                    }
+                    enableReinitialize={true}
+                    validationSchema={Yup.lazy(values => getValidationSchema(itemdetails?.type, values.unit_category))}
+                    onSubmit={handleUpdateItem}
+                >
+                    {({ values, handleChange, handleSubmit, setFieldValue, isSubmitting }) => {
+                        const handleCustomChange = (name) => (event) => {
+                            const { value } = event.target;
+                            handleChange(event); // Update Formik state
+                            setFieldValue(name, value); // Explicitly set Formik field value
+                            if (name === 'unit_category') {
+                                setUnit_Category(value); // Update local state
+                                fetchUnits(value);
+                            }
+                        };
+                        return (
+                            <Form>
+                                <div className="pt-2 pb-2 container mx-auto">
+                                    <div className="grid grid-cols-12 gap-4">
+                                        <div className="text-slate-950 col-span-12 sm:col-span-5 md:col-span-5">
+                                            <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
+                                        </div>
 
-                            <h1 className="modal-item-heading">{values.item_type === "SERVICE" ? "Service Details" : "Product Details"}</h1>
-                        </div>
-
-                        {values.item_type === "SERVICE" ?
-                            <div className="pl-5 pr-5 container mx-auto">
-                                <div className="grid grid-cols-12 gap-4">
-                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                        <AppSelect
-                                            label="Item Type"
-                                            name="item_type"
-                                            value={values.item_type}
-                                            options={itemOptions}
-                                            onChange={handleCustomChange("item_type")}
-                                        />
-                                        <ErrorMessage name="item_type" />
-                                    </div>
-
-                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                        <AppInput
-                                            type="text"
-                                            label="Name"
-                                            name="name"
-                                            value={values.name}
-                                            onChange={handleCustomChange("name")}
-                                        />
-                                        <ErrorMessage name="name" />
-                                    </div>
-
-                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                        <AppMultiSelect
-                                            label="Preferred Vendor"
-                                            name="vendor"
-                                            value={values.vendor} // Should be an array for isMulti
-                                            options={vendorOptions}
-                                            onChange={(value) => setFieldValue('vendor', value)}
-                                            isMulti={true} // Enable multi-select 
-                                        />
-                                        <ErrorMessage name="vendor" />
-                                    </div>
-
-                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                        <AppInput
-                                            type="textarea"
-                                            rows={4}
-                                            label="Description"
-                                            name="service_description"
-                                            value={values.service_description}
-                                            onChange={handleCustomChange("service_description")}
-                                        />
-                                        <ErrorMessage name="service_description" />
+                                        <div className="col-span-12 sm:col-span-7 md:col-span-7">
+                                            <h1 className="text-slate-950 font-bold text-xl text-left">Edit Item</h1>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            :
-                            <>
-                                <div>
-                                    <div className="modal-item-container">
-                                        <div>
-                                            <AppSelect
-                                                label="Item Type"
-                                                name="item_type"
-                                                value={values.item_type}
-                                                options={itemOptions}
-                                                onChange={handleCustomChange("item_type")}
-                                            />
-                                            <ErrorMessage name="item_type" />
-                                        </div>
 
-                                        <div>
-                                            <AppSelect
-                                                label="Product Catalog"
-                                                name="catalog"
-                                                value={values.catalog}
-                                                options={catalogOptions}
-                                                onChange={handleCustomChange("catalog")}
-                                            />
-                                            <ErrorMessage name="catalog" />
-                                        </div>
+                                {itemdetails?.type === "SERVICE" ? (
+                                    <>
+                                        <div className="pl-5 pr-5 container mx-auto">
+                                            <div className="grid grid-cols-12 gap-4">
+                                                {/* <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppSelect
+                                                            label="Item Type"
+                                                            name="item_type"
+                                                            value={values.item_type}
+                                                            options={itemOptions}
+                                                            onChange={handleCustomChange("item_type")}
+                                                        />
+                                                        <ErrorMessage name="item_type" />
+                                                    </div> */}
 
-                                        <div>
-                                            <AppInput
-                                                type="text"
-                                                label="Name"
-                                                name="name"
-                                                value={values.name}
-                                                onChange={handleCustomChange("name")}
-                                            />
-                                            <ErrorMessage name="name" />
-                                        </div>
-
-                                        <div>
-                                            <AppSelect
-                                                label="Unit Category"
-                                                name="unit_category"
-                                                value={values.unit_category}
-                                                options={unitCategories}
-                                                onChange={handleCustomChange("unit_category")}
-                                            />
-                                            <ErrorMessage name="unit_category" />
-                                        </div>
-
-                                        {values.unit_category === "quantity" ? (
-                                            <>
-                                                <div>
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
                                                     <AppInput
                                                         type="text"
-                                                        label="Quantity Unit"
-                                                        name="quantity_unit"
-                                                        value={values.quantity_unit}
-                                                        onChange={handleCustomChange("quantity_unit")}
+                                                        label="Name"
+                                                        name="name"
+                                                        value={values.name}
+                                                        onChange={handleCustomChange("name")}
                                                     />
-                                                    <ErrorMessage name="quantity_unit" />
+                                                    <ErrorMessage name="name" />
                                                 </div>
 
-                                                <div>
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppMultiSelect
+                                                        label="Preferred Vendor"
+                                                        name="vendor"
+                                                        value={values.vendor} // Should be an array for isMulti
+                                                        options={vendorOptions}
+                                                        onChange={(value) => setFieldValue('vendor', value)}
+                                                        isMulti={true} // Enable multi-select 
+                                                    />
+                                                    <ErrorMessage name="vendor" />
+                                                </div>
+
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppInput
+                                                        type="textarea"
+                                                        rows={4}
+                                                        label="Description"
+                                                        name="service_description"
+                                                        value={values.service_description}
+                                                        onChange={handleCustomChange("service_description")}
+                                                    />
+                                                    <ErrorMessage name="service_description" />
+                                                </div>
+
+                                                <div className="flex-center pt-20 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <div className="sticky bottom-0 w-full">
+                                                        <Button
+                                                            onClick={isLoading ? "" : handleSubmit}
+                                                            title="Update"
+                                                            width={true}
+                                                            spinner={isLoading ? <Spinner size="sm" /> : null}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div>
+
+                                        <div className="pl-5 pr-5 container mx-auto">
+                                            <div className="grid grid-cols-12 gap-4">
+                                                <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <h1 className="text-slate-950 text-lg font-bold text-xl">Item Name</h1>
+                                                </div>
+
+                                                <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <AppInput
+                                                        type="text"
+                                                        label="Name"
+                                                        name="name"
+                                                        value={values.name}
+                                                        onChange={handleCustomChange("name")}
+                                                    />
+                                                    <ErrorMessage name="name" />
+                                                </div>
+
+                                                <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <h1 className="text-slate-950 text-lg font-bold text-xl">Product Information</h1>
+                                                </div>
+
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppSelect
+                                                        label="Product Catalog"
+                                                        name="catalog"
+                                                        value={values.catalog}
+                                                        options={catalogOptions}
+                                                        onChange={handleCustomChange("catalog")}
+                                                    />
+                                                    <ErrorMessage name="catalog" />
+                                                </div>
+
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppSelect
+                                                        label="Unit Category"
+                                                        name="unit_category"
+                                                        value={values.unit_category}
+                                                        options={unitCategories}
+                                                        onChange={handleCustomChange("unit_category")}
+                                                    />
+                                                    <ErrorMessage name="unit_category" />
+                                                </div>
+
+                                                {values.unit_category === "quantity" ? (
+                                                    <>
+                                                        <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                            <AppInput
+                                                                type="text"
+                                                                label="Quantity Unit"
+                                                                name="quantity_unit"
+                                                                value={values.quantity_unit}
+                                                                onChange={handleCustomChange("quantity_unit")}
+                                                            />
+                                                            <ErrorMessage name="quantity_unit" />
+                                                        </div>
+
+                                                        <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                            <AppInput
+                                                                type="number"
+                                                                label="Quantity"
+                                                                name="units"
+                                                                value={values.units}
+                                                                onChange={handleCustomChange("units")}
+                                                            />
+                                                            <ErrorMessage name="units" />
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                            <AppSelect
+                                                                label="Units"
+                                                                name="units"
+                                                                value={values.units}
+                                                                options={unitOptions}
+                                                                onChange={handleCustomChange("units")}
+                                                            />
+                                                            <ErrorMessage name="units" />
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppSelect
+                                                        label="Category"
+                                                        name="category"
+                                                        value={values.category}
+                                                        options={categoryOptions}
+                                                        onChange={handleCustomChange("category")}
+                                                    />
+                                                    <ErrorMessage name="category" />
+                                                </div>
+
+                                                <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <AppMultiSelect
+                                                        label="Preferred Vendors"
+                                                        name="vendor"
+                                                        value={values.vendor} // Should be an array for isMulti
+                                                        options={vendorOptions}
+                                                        onChange={(value) => setFieldValue('vendor', value)}
+                                                        isMulti={true} // Enable multi-select
+                                                    />
+                                                    <ErrorMessage name="vendor" />
+                                                </div>
+
+                                                {/* modal */}
+                                                {/* <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppSelect
+                                                            label="Item Type"
+                                                            name="item_type"
+                                                            value={values.item_type}
+                                                            options={itemOptions}
+                                                            onChange={handleCustomChange("item_type")}
+                                                        />
+                                                        <ErrorMessage name="item_type" />
+                                                    </div> */}
+
+                                                <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <h1 className="text-slate-950 text-lg font-bold text-xl">Document</h1>
+                                                </div>
+
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    {itemdetails?.type !== "SERVICE" && (
+                                                        <div style={{}}>
+                                                            <div {...getRootProps()} className="drag-drop-container">
+                                                                <input {...getInputProps()} />
+                                                                {isDragActive ? (
+                                                                    <div className="drag-drop-subContainer">Upload image here</div>
+                                                                ) : (
+                                                                    <div>
+                                                                        {cnic_back_img ? (
+                                                                            <img
+                                                                                src={cnic_back_img.preview}
+                                                                                onLoad={() => {
+                                                                                    URL.revokeObjectURL(cnic_back_img.preview);
+                                                                                }}
+                                                                                alt=""
+                                                                                className="w-full h-full object-cover"
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="text-center">
+                                                                                <p className="flex-center">
+                                                                                    <FaCloudUploadAlt size={50} className="text-gray-700 dark:text-dark_text_1" />
+                                                                                </p>
+                                                                                <p className="font-medium text-sm mb-2">Select or Drop your item image here</p>
+                                                                                <p className="text-sm text-gray-400">Accepted formats: JPG, PNG, JPEG</p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <h1 className="text-slate-950 text-lg font-bold text-xl">Inventory Management</h1>
+                                                </div>
+
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
                                                     <AppInput
                                                         type="number"
-                                                        label="Quantity"
-                                                        name="units"
-                                                        value={values.units}
-                                                        onChange={handleCustomChange("units")}
+                                                        label="Stock in hand"
+                                                        name="opening_stock"
+                                                        value={values.opening_stock}
+                                                        onChange={handleCustomChange("opening_stock")}
                                                     />
-                                                    <ErrorMessage name="units" />
+                                                    <ErrorMessage name="opening_stock" />
                                                 </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div>
-                                                    <AppSelect
-                                                        label="Units"
-                                                        name="units"
-                                                        value={values.units}
-                                                        options={unitOptions}
-                                                        onChange={handleCustomChange("units")}
+
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppInput
+                                                        type="number"
+                                                        label="Stock rate per unit"
+                                                        name="rate_per_unit"
+                                                        value={values.rate_per_unit}
+                                                        onChange={handleCustomChange("rate_per_unit")}
                                                     />
-                                                    <ErrorMessage name="units" />
+                                                    <ErrorMessage name="rate_per_unit" />
                                                 </div>
-                                            </>
-                                        )}
-                                    </div>
 
-                                    <div className="pl-5 pr-5 container mx-auto">
-                                        <div className="grid grid-cols-12 gap-4">
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppInput
+                                                        type="number"
+                                                        label="Re-order Level"
+                                                        name="re_order_level"
+                                                        value={values.re_order_level}
+                                                        onChange={handleCustomChange("re_order_level")}
+                                                    />
+                                                </div>
 
-                                            <div className="col-span-12 sm:col-span-4 md:col-span-4">
-                                                <AppSelect
-                                                    label="Category"
-                                                    name="category"
-                                                    value={values.category}
-                                                    options={categoryOptions}
-                                                    onChange={handleCustomChange("category")}
-                                                />
-                                                <ErrorMessage name="category" />
-                                            </div>
+                                                <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                    <AppInput
+                                                        type="textarea" // Change type to "textarea"
+                                                        label="Description"
+                                                        name="description"
+                                                        value={values.description}
+                                                        onChange={handleCustomChange("description")}
+                                                        rows={4} // You can control the height of the textarea with rows
+                                                    />
+                                                </div>
 
-                                            <div className="col-span-12 sm:col-span-8 md:col-span-8">
-                                                <AppMultiSelect
-                                                    label="Preferred Vendor"
-                                                    name="vendor"
-                                                    value={values.vendor} // Should be an array for isMulti
-                                                    options={vendorOptions}
-                                                    onChange={(value) => setFieldValue('vendor', value)}
-                                                    isMulti={true} // Enable multi-select
-                                                />
-                                                <ErrorMessage name="vendor" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="modal-item-container">
-                                        {itemdetails?.image == null || undefined ?
-                                            <>
-                                                {values.item_type !== "SERVICE" && (
-                                                    <div style={{}}>
-                                                        <div {...getRootProps()} className="drag-drop-container">
-                                                            <input {...getInputProps()} />
-                                                            {isDragActive ? (
-                                                                <div className="drag-drop-subContainer">Upload image here</div>
-                                                            ) : (
-                                                                <div>
-                                                                    {cnic_back_img ? (
-                                                                        <img
-                                                                            src={cnic_back_img.preview}
-                                                                            onLoad={() => {
-                                                                                URL.revokeObjectURL(cnic_back_img.preview);
-                                                                            }}
-                                                                            alt=""
-                                                                            className="w-full h-full object-cover"
-                                                                        />
-                                                                    ) : (
-                                                                        <div className="text-center">
-                                                                            <p className="flex-center">
-                                                                                <FaCloudUploadAlt size={50} className="text-gray-700 dark:text-dark_text_1" />
-                                                                            </p>
-                                                                            <p className="font-medium text-sm mb-2">Select or Drop your item image here</p>
-                                                                            <p className="text-sm text-gray-400">Accepted formats: JPG, PNG, JPEG</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                                <div className="flex-center pt-10 col-span-12 sm:col-span-12 md:col-span-12">
+                                                    <div className="sticky bottom-0 w-full">
+                                                        <Button
+                                                            onClick={isLoading ? "" : handleSubmit}
+                                                            title="Update"
+                                                            width={true}
+                                                            spinner={isLoading ? <Spinner size="sm" /> : null}
+                                                        />
                                                     </div>
-                                                )}
-                                            </>
-                                            :
-                                            <>
+                                                </div>
 
-                                                {values.item_type !== "SERVICE" && (
-                                                    <div style={{}}>
-                                                        <div {...getRootProps()} className="drag-drop-container">
-                                                            <input {...getInputProps()} />
-                                                            {isDragActive ? (
-                                                                <div className="drag-drop-subContainer">Upload image here</div>
-                                                            ) : (
-                                                                <div>
-                                                                    {cnic_back_img ? (
-                                                                        <img
-                                                                            src={cnic_back_img.preview}
-                                                                            onLoad={() => {
-                                                                                URL.revokeObjectURL(cnic_back_img.preview);
-                                                                            }}
-                                                                            alt=""
-                                                                            className="w-full h-full object-cover"
-                                                                        />
-                                                                    ) : (
-                                                                        <div className="text-center">
-                                                                            <p className="flex-center">
-                                                                                <FaCloudUploadAlt size={50} className="text-gray-700 dark:text-dark_text_1" />
-                                                                            </p>
-                                                                            <p className="font-medium text-sm mb-2">Select or Drop your item image here</p>
-                                                                            <p className="text-sm text-gray-400">Accepted formats: JPG, PNG, JPEG</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>}
-                                    </div>
-
-                                    <h1 className="modal-item-heading">Inventory Tracking</h1>
-
-                                    <div className="modal-item-container">
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Stock in hand"
-                                                name="opening_stock"
-                                                value={values.opening_stock}
-                                                onChange={handleCustomChange("opening_stock")}
-                                            />
-                                            <ErrorMessage name="opening_stock" />
-                                        </div>
-
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Stock rate per unit"
-                                                name="rate_per_unit"
-                                                value={values.rate_per_unit}
-                                                onChange={handleCustomChange("rate_per_unit")}
-                                            />
-                                            <ErrorMessage name="rate_per_unit" />
-                                        </div>
-
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Re-order Level"
-                                                name="re_order_level"
-                                                value={values.re_order_level}
-                                                onChange={handleCustomChange("re_order_level")}
-                                            />
-                                            {/* <ErrorMessage name="re_order_level" /> */}
-                                        </div>
-
-                                        <div>
-                                            <AppInput
-                                                type="textarea"
-                                                rows={4}
-                                                label="Description"
-                                                name="description"
-                                                value={values.description}
-                                                onChange={handleCustomChange("description")}
-                                            />
-                                            {/* <ErrorMessage name="description" /> */}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </>
-                        }
+                                )}
 
-                        <div className="flex-center">
-                            <div className="my-5 w-52">
-                                <Button
-                                    onClick={isLoading ? "" : handleSubmit}
-                                    title="Update"
-                                    width={true}
-                                    spinner={isLoading ? <Spinner size="sm" /> : null}
-                                />
-                            </div>
-                        </div>
-                    </Form>
-                )
-            }}
-        </Formik >
+
+                            </Form>
+                        )
+                    }}
+                </Formik >
+            </Card>
+        </div>
     );
 };
 

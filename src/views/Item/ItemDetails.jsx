@@ -38,11 +38,12 @@ const ItemDetails = () => {
             ) : (
                 <>
                     <div
-                        className="flex justify-start items-center gap-2 pb-5 w-fit"
-                    >
-                        <FaChevronLeft onClick={goBack} className="cursor-pointer" />
+                        className="flex justify-start items-center gap-2 pb-5"
 
-                        <h1 className="font-semibold ">Item Details</h1>
+                    >
+                        <FaChevronLeft className="cursor-pointer" onClick={goBack} />
+
+                        <h1 className="text-center mx-auto" style={{ color: "#000000", fontWeight: 600, letterSpacing: "1px", fontSize: "20px" }}>Item Details</h1>
                     </div>
                     {itemdetails?.type == "SERVICE" ?
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -62,11 +63,15 @@ const ItemDetails = () => {
                                     <Card  >
                                         <CardHeader title={"Product Details"} />
                                         {itemdetails?.image == null || undefined || itemdetails.legth == 0 ?
-                                            <img src={logo} alt="item" />
+                                            <a href={logo} target="_blank">
+                                                <img src={logo} alt="item" className="text-center mx-auto w-20" />
+                                            </a>
                                             :
-                                            <div style={{ display: "flex", justifyContent: "center", alignContent: "center" }}>
-                                                <img src={itemdetails.image} alt="item" style={{ alignSelf: "center", width: "500", height: "100px" }} />
-                                            </div>
+                                            <a href={itemdetails.image} target="_blank">
+                                                <div style={{ display: "flex", justifyContent: "center", alignContent: "center" }}>
+                                                    <img src={itemdetails.image} alt="item" className="text-center mx-auto w-20" />
+                                                </div>
+                                            </a>
                                         }
                                         <CardItem title={"Item Type"} value={itemdetails?.type} />
                                         <CardItem title={"Name"} value={itemdetails?.name} />

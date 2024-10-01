@@ -13,17 +13,20 @@ import { FaChevronLeft, FaCloudUploadAlt } from "react-icons/fa";
 import { addVendor } from "../../app/features/Vendor/addVendorSlice";
 import toast from "react-hot-toast";
 import { Spinner } from "../../components/theme/Loader";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { getItems } from "../../app/features/Item/getItemSlice";
 import ErrorMessage from "../../components/form/ErrorMessage";
 import AppMultiSelect from "../../components/form/AppMultiSelect";
+import Card from "../../components/card/Card";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AddItem = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const itemType = searchParams.get("item_type");
 
     const [cnic_back_img, setCnic_back_img] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -51,9 +54,6 @@ const AddItem = () => {
             })
         );
     }, []);
-
-
-
 
     const itemOptions = [
         { value: "PRODUCT", label: "PRODUCT" },
@@ -185,16 +185,16 @@ const AddItem = () => {
 
                 let Data = {};
 
-                if (data.item_type === "SERVICE") {
+                if (itemType === "SERVICE") {
                     Data = {
-                        type: data.item_type,
+                        type: itemType,
                         name: data.name,
                         vendor_ids: data.vendor,
                         description: data.service_description,
                     };
                 } else if (data.unit_category == "quantity") {
                     Data = {
-                        type: data.item_type,
+                        type: itemType,
                         name: data.name,
                         product_category: data.category,
                         unit_category: data.unit_category,
@@ -211,7 +211,7 @@ const AddItem = () => {
                     };
                 } else {
                     Data = {
-                        type: data.item_type,
+                        type: itemType,
                         name: data.name,
                         product_category: data.category,
                         unit_category: data.unit_category,
@@ -288,16 +288,16 @@ const AddItem = () => {
 
                             let Data = {};
 
-                            if (data.item_type === "SERVICE") {
+                            if (itemType === "SERVICE") {
                                 Data = {
-                                    type: data.item_type,
+                                    type: itemType,
                                     name: data.name,
                                     vendor_ids: data.vendor,
                                     description: data.service_description,
                                 };
                             } else if (data.unit_category == "quantity") {
                                 Data = {
-                                    type: data.item_type,
+                                    type: itemType,
                                     name: data.name,
                                     product_category: data.category,
                                     unit_category: data.unit_category,
@@ -314,7 +314,7 @@ const AddItem = () => {
                                 };
                             } else {
                                 Data = {
-                                    type: data.item_type,
+                                    type: itemType,
                                     name: data.name,
                                     product_category: data.category,
                                     product_units: data.units,
@@ -369,7 +369,7 @@ const AddItem = () => {
     };
 
     const validationSchemaService = Yup.object().shape({
-        item_type: Yup.string().required("Item type is required"),
+        // item_type: Yup.string().required("Item type is required"),
         name: Yup.string().required("Name is required"),
         vendor: Yup.array()
             .of(Yup.string().required('Vendor is required'))
@@ -379,7 +379,7 @@ const AddItem = () => {
     });
 
     const baseProductValidationSchema = Yup.object().shape({
-        item_type: Yup.string().required("Item type is required"),
+        // item_type: Yup.string().required("Item type is required"),
         category: Yup.string().required("Category is required"),
         name: Yup.string().required("Name is required"),
         unit_category: Yup.string().required("Unit category is required"),
@@ -397,7 +397,7 @@ const AddItem = () => {
     });
 
 
-    const getValidationSchema = (itemType, unitCategory) => {
+    const getValidationSchema = (unitCategory) => {
         if (itemType === 'SERVICE') {
             return validationSchemaService;
         } else if (itemType === 'PRODUCT') {
@@ -436,314 +436,346 @@ const AddItem = () => {
 
     return (
         <>
-            <Formik
-                initialValues={{
-                    item_type: "",
-                    category: "",
-                    name: "",
-                    unit_category: "",
-                    units: "",
-                    usage_unit: "",
-                    quantity_unit: "", // New field for quantity unit
-                    // quantity: "", // New field for quantity
-                    // usage_quantity: "", // New field for usage quantity
-                    catalog: "",
-                    // vendor_service: [],
-                    vendor: [],
-                    opening_stock: "",
-                    rate_per_unit: "",
-                    re_order_level: "",
-                    description: "",
-                    service_description: ""
-                }}
-                validationSchema={Yup.lazy(values => getValidationSchema(values.item_type, values.unit_category))}
-                onSubmit={handleAddItem}
-            >
-                {({ values, handleChange, handleSubmit, setFieldValue, isSubmitting }) => {
-                    const handleCustomChange = (name) => (event) => {
-                        const { value } = event.target;
-                        handleChange(event); // Update Formik state
-                        setFieldValue(name, value); // Explicitly set Formik field value
-                        if (name === 'unit_category') {
-                            setCategory(value); // Update local state
-                            fetchUnits(value);
-                        }
-                    };
-                    return (
-                        <Form>
-                            <div
-                                className="flex justify-start items-center gap-2 pb-5 w-fit"
-                            >
-                                <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
-
-                                <h1 className="modal-item-heading">{values.item_type === "SERVICE" ? "Service Details" : "Product Details"}</h1>
-                            </div>
-
-                            {values.item_type === "SERVICE" ? (
-                                <>
-                                    <div className="pl-5 pr-5 container mx-auto">
+            <div className="pl-7 pr-7 pt-7 pb-7">
+                <Card>
+                    <Formik
+                        initialValues={{
+                            // item_type: "",
+                            category: "",
+                            name: "",
+                            unit_category: "",
+                            units: "",
+                            usage_unit: "",
+                            quantity_unit: "", // New field for quantity unit
+                            // quantity: "", // New field for quantity
+                            // usage_quantity: "", // New field for usage quantity
+                            catalog: "",
+                            // vendor_service: [],
+                            vendor: [],
+                            opening_stock: "",
+                            rate_per_unit: "",
+                            re_order_level: "",
+                            description: "",
+                            service_description: ""
+                        }}
+                        validationSchema={Yup.lazy(values => getValidationSchema(values.unit_category))}
+                        onSubmit={handleAddItem}
+                    >
+                        {({ values, handleChange, handleSubmit, setFieldValue, isSubmitting }) => {
+                            const handleCustomChange = (name) => (event) => {
+                                const { value } = event.target;
+                                handleChange(event); // Update Formik state
+                                setFieldValue(name, value); // Explicitly set Formik field value
+                                if (name === 'unit_category') {
+                                    setCategory(value); // Update local state
+                                    fetchUnits(value);
+                                }
+                            };
+                            return (
+                                <Form>
+                                    <div className="pt-2 pb-2 container mx-auto">
                                         <div className="grid grid-cols-12 gap-4">
-                                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                                <AppSelect
-                                                    label="Item Type"
-                                                    name="item_type"
-                                                    value={values.item_type}
-                                                    options={itemOptions}
-                                                    onChange={handleCustomChange("item_type")}
-                                                />
-                                                <ErrorMessage name="item_type" />
+                                            <div className="text-slate-950 col-span-12 sm:col-span-5 md:col-span-5">
+                                                <FaChevronLeft onClick={() => navigate(-1)} className="cursor-pointer" />
                                             </div>
 
-                                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                                <AppInput
-                                                    type="text"
-                                                    label="Name"
-                                                    name="name"
-                                                    value={values.name}
-                                                    onChange={handleCustomChange("name")}
-                                                />
-                                                <ErrorMessage name="name" />
-                                            </div>
-
-                                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                                <AppMultiSelect
-                                                    label="Preferred Vendor"
-                                                    name="vendor"
-                                                    value={values.vendor} // Should be an array for isMulti
-                                                    options={vendorOptions}
-                                                    onChange={(value) => setFieldValue('vendor', value)}
-                                                    isMulti={true} // Enable multi-select 
-                                                />
-                                                <ErrorMessage name="vendor" />
-                                            </div>
-
-                                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                                <AppInput
-                                                    type="textarea"
-                                                    rows={4}
-                                                    label="Description"
-                                                    name="service_description"
-                                                    value={values.service_description}
-                                                    onChange={handleCustomChange("service_description")}
-                                                />
-                                                <ErrorMessage name="service_description" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <div>
-                                    <div className="modal-item-container">
-                                        <div>
-                                            <AppSelect
-                                                label="Item Type"
-                                                name="item_type"
-                                                value={values.item_type}
-                                                options={itemOptions}
-                                                onChange={handleCustomChange("item_type")}
-                                            />
-                                            <ErrorMessage name="item_type" />
-                                        </div>
-
-                                        <div>
-                                            <AppSelect
-                                                label="Product Catalog"
-                                                name="catalog"
-                                                value={values.catalog}
-                                                options={catalogOptions}
-                                                onChange={handleCustomChange("catalog")}
-                                            />
-                                            <ErrorMessage name="catalog" />
-                                        </div>
-
-                                        <div>
-                                            <AppInput
-                                                type="text"
-                                                label="Name"
-                                                name="name"
-                                                value={values.name}
-                                                onChange={handleCustomChange("name")}
-                                            />
-                                            <ErrorMessage name="name" />
-                                        </div>
-
-                                        <div>
-                                            <AppSelect
-                                                label="Unit Category"
-                                                name="unit_category"
-                                                value={values.unit_category}
-                                                options={unitCategories}
-                                                onChange={handleCustomChange("unit_category")}
-                                            />
-                                            <ErrorMessage name="unit_category" />
-                                        </div>
-
-                                        {values.unit_category === "quantity" ? (
-                                            <>
-                                                <div>
-                                                    <AppInput
-                                                        type="text"
-                                                        label="Quantity Unit"
-                                                        name="quantity_unit"
-                                                        value={values.quantity_unit}
-                                                        onChange={handleCustomChange("quantity_unit")}
-                                                    />
-                                                    <ErrorMessage name="quantity_unit" />
-                                                </div>
-
-                                                <div>
-                                                    <AppInput
-                                                        type="number"
-                                                        label="Quantity"
-                                                        name="units"
-                                                        value={values.units}
-                                                        onChange={handleCustomChange("units")}
-                                                    />
-                                                    <ErrorMessage name="units" />
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div>
-                                                    <AppSelect
-                                                        label="Units"
-                                                        name="units"
-                                                        value={values.units}
-                                                        options={unitOptions}
-                                                        onChange={handleCustomChange("units")}
-                                                    />
-                                                    <ErrorMessage name="units" />
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    <div className="pl-5 pr-5 container mx-auto">
-                                        <div className="grid grid-cols-12 gap-4">
-
-                                            <div className="col-span-12 sm:col-span-4 md:col-span-4">
-                                                <AppSelect
-                                                    label="Category"
-                                                    name="category"
-                                                    value={values.category}
-                                                    options={categoryOptions}
-                                                    onChange={handleCustomChange("category")}
-                                                />
-                                                <ErrorMessage name="category" />
-                                            </div>
-
-                                            <div className="col-span-12 sm:col-span-8 md:col-span-8">
-                                                <AppMultiSelect
-                                                    label="Preferred Vendor"
-                                                    name="vendor"
-                                                    value={values.vendor} // Should be an array for isMulti
-                                                    options={vendorOptions}
-                                                    onChange={(value) => setFieldValue('vendor', value)}
-                                                    isMulti={true} // Enable multi-select
-                                                />
-                                                <ErrorMessage name="vendor" />
+                                            <div className="col-span-12 sm:col-span-7 md:col-span-7">
+                                                <h1 className="text-slate-950 font-bold text-xl text-left">Add Item</h1>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* paddingBottom: 15, paddingLeft: 15, paddingRight: 15 */}
-                                    <div className="modal-item-container">
-                                        {values.item_type !== "SERVICE" && (
-                                            <div style={{}}>
-                                                <div {...getRootProps()} className="drag-drop-container">
-                                                    <input {...getInputProps()} />
-                                                    {isDragActive ? (
-                                                        <div className="drag-drop-subContainer">Upload image here</div>
-                                                    ) : (
-                                                        <div>
-                                                            {cnic_back_img ? (
-                                                                <img
-                                                                    src={cnic_back_img.preview}
-                                                                    onLoad={() => {
-                                                                        URL.revokeObjectURL(cnic_back_img.preview);
-                                                                    }}
-                                                                    alt=""
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <div className="text-center">
-                                                                    <p className="flex-center">
-                                                                        <FaCloudUploadAlt size={50} className="text-gray-700 dark:text-dark_text_1" />
-                                                                    </p>
-                                                                    <p className="font-medium text-sm mb-2">Select or Drop your item image here</p>
-                                                                    <p className="text-sm text-gray-400">Accepted formats: JPG, PNG, JPEG</p>
-                                                                </div>
-                                                            )}
+                                    {itemType === "SERVICE" ? (
+                                        <>
+                                            <div className="pl-5 pr-5 container mx-auto">
+                                                <div className="grid grid-cols-12 gap-4">
+                                                    {/* <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppSelect
+                                                            label="Item Type"
+                                                            name="item_type"
+                                                            value={values.item_type}
+                                                            options={itemOptions}
+                                                            onChange={handleCustomChange("item_type")}
+                                                        />
+                                                        <ErrorMessage name="item_type" />
+                                                    </div> */}
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppInput
+                                                            type="text"
+                                                            label="Name"
+                                                            name="name"
+                                                            value={values.name}
+                                                            onChange={handleCustomChange("name")}
+                                                        />
+                                                        <ErrorMessage name="name" />
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppMultiSelect
+                                                            label="Preferred Vendor"
+                                                            name="vendor"
+                                                            value={values.vendor} // Should be an array for isMulti
+                                                            options={vendorOptions}
+                                                            onChange={(value) => setFieldValue('vendor', value)}
+                                                            isMulti={true} // Enable multi-select 
+                                                        />
+                                                        <ErrorMessage name="vendor" />
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppInput
+                                                            type="textarea"
+                                                            rows={4}
+                                                            label="Description"
+                                                            name="service_description"
+                                                            value={values.service_description}
+                                                            onChange={handleCustomChange("service_description")}
+                                                        />
+                                                        <ErrorMessage name="service_description" />
+                                                    </div>
+
+                                                    <div className="flex-center pt-20 pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <div className="sticky bottom-0 w-full">
+                                                            <Button
+                                                                onClick={isLoading ? "" : handleSubmit}
+                                                                title="Add"
+                                                                width={true}
+                                                                spinner={isLoading ? <Spinner size="sm" /> : null}
+                                                            />
                                                         </div>
-                                                    )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        )}
-                                    </div>
-
-                                    <h1 className="modal-item-heading">Inventory Tracking</h1>
-
-                                    <div className="modal-item-container">
+                                        </>
+                                    ) : (
                                         <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Stock in hand"
-                                                name="opening_stock"
-                                                value={values.opening_stock}
-                                                onChange={handleCustomChange("opening_stock")}
-                                            />
-                                            <ErrorMessage name="opening_stock" />
-                                        </div>
 
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Stock rate per unit"
-                                                name="rate_per_unit"
-                                                value={values.rate_per_unit}
-                                                onChange={handleCustomChange("rate_per_unit")}
-                                            />
-                                            <ErrorMessage name="rate_per_unit" />
-                                        </div>
+                                            <div className="pl-5 pr-5 container mx-auto">
+                                                <div className="grid grid-cols-12 gap-4">
+                                                    <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <h1 className="text-slate-950 text-lg font-bold text-xl">Item Name</h1>
+                                                    </div>
 
-                                        <div>
-                                            <AppInput
-                                                type="number"
-                                                label="Re-order Level"
-                                                name="re_order_level"
-                                                value={values.re_order_level}
-                                                onChange={handleCustomChange("re_order_level")}
-                                            />
-                                        </div>
+                                                    <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <AppInput
+                                                            type="text"
+                                                            label="Name"
+                                                            name="name"
+                                                            value={values.name}
+                                                            onChange={handleCustomChange("name")}
+                                                        />
+                                                        <ErrorMessage name="name" />
+                                                    </div>
 
-                                        <div>
-                                            <AppInput
-                                                type="textarea" // Change type to "textarea"
-                                                label="Description"
-                                                name="description"
-                                                value={values.description}
-                                                onChange={handleCustomChange("description")}
-                                                rows={4} // You can control the height of the textarea with rows
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                                    <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <h1 className="text-slate-950 text-lg font-bold text-xl">Product Information</h1>
+                                                    </div>
 
-                            <div className="flex-center">
-                                <div className="my-5 w-52">
-                                    <Button
-                                        onClick={isLoading ? "" : handleSubmit}
-                                        title="Submit"
-                                        width={true}
-                                        spinner={isLoading ? <Spinner size="sm" /> : null}
-                                    />
-                                </div>
-                            </div>
-                        </Form>
-                    )
-                }}
-            </Formik>
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppSelect
+                                                            label="Product Catalog"
+                                                            name="catalog"
+                                                            value={values.catalog}
+                                                            options={catalogOptions}
+                                                            onChange={handleCustomChange("catalog")}
+                                                        />
+                                                        <ErrorMessage name="catalog" />
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppSelect
+                                                            label="Unit Category"
+                                                            name="unit_category"
+                                                            value={values.unit_category}
+                                                            options={unitCategories}
+                                                            onChange={handleCustomChange("unit_category")}
+                                                        />
+                                                        <ErrorMessage name="unit_category" />
+                                                    </div>
+
+                                                    {values.unit_category === "quantity" ? (
+                                                        <>
+                                                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                                <AppInput
+                                                                    type="text"
+                                                                    label="Quantity Unit"
+                                                                    name="quantity_unit"
+                                                                    value={values.quantity_unit}
+                                                                    onChange={handleCustomChange("quantity_unit")}
+                                                                />
+                                                                <ErrorMessage name="quantity_unit" />
+                                                            </div>
+
+                                                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                                <AppInput
+                                                                    type="number"
+                                                                    label="Quantity"
+                                                                    name="units"
+                                                                    value={values.units}
+                                                                    onChange={handleCustomChange("units")}
+                                                                />
+                                                                <ErrorMessage name="units" />
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                                <AppSelect
+                                                                    label="Units"
+                                                                    name="units"
+                                                                    value={values.units}
+                                                                    options={unitOptions}
+                                                                    onChange={handleCustomChange("units")}
+                                                                />
+                                                                <ErrorMessage name="units" />
+                                                            </div>
+                                                        </>
+                                                    )}
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppSelect
+                                                            label="Category"
+                                                            name="category"
+                                                            value={values.category}
+                                                            options={categoryOptions}
+                                                            onChange={handleCustomChange("category")}
+                                                        />
+                                                        <ErrorMessage name="category" />
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <AppMultiSelect
+                                                            label="Preferred Vendors"
+                                                            name="vendor"
+                                                            value={values.vendor} // Should be an array for isMulti
+                                                            options={vendorOptions}
+                                                            onChange={(value) => setFieldValue('vendor', value)}
+                                                            isMulti={true} // Enable multi-select
+                                                        />
+                                                        <ErrorMessage name="vendor" />
+                                                    </div>
+
+                                                    {/* modal */}
+                                                    {/* <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppSelect
+                                                            label="Item Type"
+                                                            name="item_type"
+                                                            value={values.item_type}
+                                                            options={itemOptions}
+                                                            onChange={handleCustomChange("item_type")}
+                                                        />
+                                                        <ErrorMessage name="item_type" />
+                                                    </div> */}
+
+                                                    <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <h1 className="text-slate-950 text-lg font-bold text-xl">Document</h1>
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        {itemType !== "SERVICE" && (
+                                                            <div style={{}}>
+                                                                <div {...getRootProps()} className="drag-drop-container">
+                                                                    <input {...getInputProps()} />
+                                                                    {isDragActive ? (
+                                                                        <div className="drag-drop-subContainer">Upload image here</div>
+                                                                    ) : (
+                                                                        <div>
+                                                                            {cnic_back_img ? (
+                                                                                <img
+                                                                                    src={cnic_back_img.preview}
+                                                                                    onLoad={() => {
+                                                                                        URL.revokeObjectURL(cnic_back_img.preview);
+                                                                                    }}
+                                                                                    alt=""
+                                                                                    className="w-full h-full object-cover"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="text-center">
+                                                                                    <p className="flex-center">
+                                                                                        <FaCloudUploadAlt size={50} className="text-gray-700 dark:text-dark_text_1" />
+                                                                                    </p>
+                                                                                    <p className="font-medium text-sm mb-2">Select or Drop your item image here</p>
+                                                                                    <p className="text-sm text-gray-400">Accepted formats: JPG, PNG, JPEG</p>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="pt-5 pb-3 col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <h1 className="text-slate-950 text-lg font-bold text-xl">Inventory Management</h1>
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppInput
+                                                            type="number"
+                                                            label="Stock in hand"
+                                                            name="opening_stock"
+                                                            value={values.opening_stock}
+                                                            onChange={handleCustomChange("opening_stock")}
+                                                        />
+                                                        <ErrorMessage name="opening_stock" />
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppInput
+                                                            type="number"
+                                                            label="Stock rate per unit"
+                                                            name="rate_per_unit"
+                                                            value={values.rate_per_unit}
+                                                            onChange={handleCustomChange("rate_per_unit")}
+                                                        />
+                                                        <ErrorMessage name="rate_per_unit" />
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppInput
+                                                            type="number"
+                                                            label="Re-order Level"
+                                                            name="re_order_level"
+                                                            value={values.re_order_level}
+                                                            onChange={handleCustomChange("re_order_level")}
+                                                        />
+                                                    </div>
+
+                                                    <div className="col-span-12 sm:col-span-6 md:col-span-6">
+                                                        <AppInput
+                                                            type="textarea" // Change type to "textarea"
+                                                            label="Description"
+                                                            name="description"
+                                                            value={values.description}
+                                                            onChange={handleCustomChange("description")}
+                                                            rows={4} // You can control the height of the textarea with rows
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex-center pt-10 col-span-12 sm:col-span-12 md:col-span-12">
+                                                        <div className="sticky bottom-0 w-full">
+                                                            <Button
+                                                                onClick={isLoading ? "" : handleSubmit}
+                                                                title="Add"
+                                                                width={true}
+                                                                spinner={isLoading ? <Spinner size="sm" /> : null}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+
+                                </Form>
+                            )
+                        }}
+                    </Formik>
+                </Card>
+            </div>
         </>
     );
 };
