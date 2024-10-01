@@ -6,19 +6,19 @@ export default [
     id: "home",
     title: "Dashboard",
     path: "/",
-    icon: <MdOutlineDashboardCustomize size={21} />,
+    icon: <MdOutlineDashboardCustomize size={18} />,
   },
   {
     id: "vendor",
     title: "Vendors",
     path: "/vendors",
-    icon: <FaStoreAlt size={21} />,
+    icon: <FaStoreAlt size={18} />,
   },
   {
     id: "items",
     title: "Items",
     path: "/items",
-    icon: <FaProductHunt size={21} />,
+    icon: <FaProductHunt size={18} />,
   },
   {
     id: "purchaserequisition",
@@ -56,6 +56,6 @@ export default [
     id: "recipes",
     title: "Recipes",
     path: "/recipes",
-    icon: <FaUtensils size={21} />,
+    icon: <FaUtensils size={18} />,
   },
 ];

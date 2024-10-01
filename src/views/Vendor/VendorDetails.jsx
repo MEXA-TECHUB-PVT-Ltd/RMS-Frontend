@@ -171,14 +171,14 @@ const VendorDetails = () => {
                             </td>
                             <td className="border-b border-gray-300 px-4 py-2 text-center">
                               <div className="flex-center gap-2 cursor-pointer">
-                                <FaEye
+                                {/* <FaEye
                                   size={15}
                                   className="text-eye_black dark:text-eye_white"
                                   title="View"
-                                />
+                                /> */}
                                 <FaDownload size={15} style={{ color: "#34495E" }} title="Download" onClick={() => handleDownload(vendor?.cnic_front_img?.secure_url, vendor?.cnic_front_img?.api_key)} />
-                                <FaEdit size={15} className={`${textColor}`} title="Edit" />
-                                <FaTrash size={15} className="text-red-600" title="Delete" />
+                                {/* <FaEdit size={15} className={`${textColor}`} title="Edit" />
+                                <FaTrash size={15} className="text-red-600" title="Delete" /> */}
                               </div>
                             </td>
                           </tr>
@@ -198,14 +198,14 @@ const VendorDetails = () => {
                             </td>
                             <td className="border-b border-gray-300 px-4 py-2 text-center">
                               <div className="flex-center gap-2 cursor-pointer">
-                                <FaEye
+                                {/* <FaEye
                                   size={15}
                                   className="text-eye_black dark:text-eye_white"
                                   title="View"
-                                />
+                                /> */}
                                 <FaDownload size={15} style={{ color: "#34495E" }} title="Download" onClick={() => handleDownload(vendor?.cnic_back_img?.secure_url, vendor?.cnic_back_img?.api_key)} />
-                                <FaEdit size={15} className={`${textColor}`} title="Edit" />
-                                <FaTrash size={15} className="text-red-600" title="Delete" />
+                                {/* <FaEdit size={15} className={`${textColor}`} title="Edit" />
+                                <FaTrash size={15} className="text-red-600" title="Delete" /> */}
                               </div>
                             </td>
                           </tr>
@@ -225,14 +225,14 @@ const VendorDetails = () => {
                             </td>
                             <td className="border-b border-gray-300 px-4 py-2 text-center">
                               <div className="flex-center gap-2 cursor-pointer">
-                                <FaEye
+                                {/* <FaEye
                                   size={15}
                                   className="text-eye_black dark:text-eye_white"
                                   title="View"
-                                />
+                                /> */}
                                 <FaDownload size={15} style={{ color: "#34495E" }} title="Download" onClick={() => handleDownload(vendor?.document?.url, vendor?.document?.original_filename)} />
-                                <FaEdit size={15} className={`${textColor}`} title="Edit" />
-                                <FaTrash size={15} className="text-red-600" title="Delete" />
+                                {/* <FaEdit size={15} className={`${textColor}`} title="Edit" />
+                                <FaTrash size={15} className="text-red-600" title="Delete" /> */}
                               </div>
                             </td>
                           </tr>
