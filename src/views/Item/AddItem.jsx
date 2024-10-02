@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Button from "../../components/form/Button";
 import AppInput from "../../components/form/AppInput";
-import { Formik, Form } from 'formik';
+import { Formik, Form, FieldArray } from 'formik';
 import * as Yup from "yup";
 import { currency, paymentTerm } from "../../utils/vendor";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,6 +19,7 @@ import { getItems } from "../../app/features/Item/getItemSlice";
 import ErrorMessage from "../../components/form/ErrorMessage";
 import AppMultiSelect from "../../components/form/AppMultiSelect";
 import Card from "../../components/card/Card";
+import Modal from "../../components/modal/Modal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -27,6 +28,8 @@ const AddItem = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const itemType = searchParams.get("item_type");
+
+    const theme = useSelector((state) => state.theme);
 
     const [cnic_back_img, setCnic_back_img] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -434,6 +437,55 @@ const AddItem = () => {
 
     ////////////////////   
 
+    // category
+    const [loading, setLoading] = useState(false);
+    const [addCategoryModal, setAddCategoryModal] = useState(false);
+
+    const handleAddCategory = async (data, { resetForm }) => {
+        console.log(data);
+        setLoading(true);
+        setTimeout(() => {
+
+            const InsertAPIURL = `${API_URL}/product/category/create`;
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            };
+
+            let Data = {};
+
+            Data = {
+                name: data.category_name
+            };
+
+            fetch(InsertAPIURL, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(Data),
+            })
+                .then(response => response.json())
+                .then(response => {
+                    console.log(response);
+                    setLoading(false);
+                    if (response.success) {
+                        setLoading(false);
+                        toast.success(response.message);
+                        fetchCategories();
+                        setAddCategoryModal(false);
+                        resetForm();
+                    } else {
+                        setLoading(false);
+                        toast.error(response.error.message);
+                    }
+                })
+                .catch(error => {
+                    setLoading(false);
+                    toast.error(error.message);
+                });
+
+        }, 3000);
+    }
+
     return (
         <>
             <div className="pl-7 pr-7 pt-7 pb-7">
@@ -634,14 +686,52 @@ const AddItem = () => {
                                                     )}
 
                                                     <div className="col-span-12 sm:col-span-6 md:col-span-6">
-                                                        <AppSelect
+                                                        {/* <AppSelect
                                                             label="Category"
                                                             name="category"
                                                             value={values.category}
                                                             options={categoryOptions}
                                                             onChange={handleCustomChange("category")}
                                                         />
-                                                        <ErrorMessage name="category" />
+                                                        <ErrorMessage name="category" /> */}
+
+                                                        <div className="w-full">
+                                                            <label className="block text-lg font-normal text-light_text_1 dark:text-dark_text_1 mb-1 tracking-wide">
+                                                                Category
+                                                            </label>
+
+                                                            <div className={`flex items-center border rounded-md overflow-hidden focus-within:${theme.borderColor}`}>
+                                                                <select
+                                                                    value={values.category}
+                                                                    onChange={handleChange("category")}
+                                                                    className="app-input flex-1"
+                                                                >
+                                                                    <option value="">Category</option>
+                                                                    {categoryOptions?.map((option) => (
+                                                                        <>
+                                                                            <option key={option.value} value={option.value}>
+                                                                                {option.label}
+                                                                            </option>
+                                                                        </>
+                                                                    ))}
+
+                                                                </select>
+
+                                                                {/* Add Button */}
+                                                                <button
+                                                                    type="button"
+                                                                    className="bg-blue-950 text-white px-4 py-2"
+                                                                    onClick={() => {
+                                                                        setAddCategoryModal(true)
+                                                                    }}
+                                                                >
+                                                                    Add
+                                                                </button>
+                                                            </div>
+
+                                                            <ErrorMessage name="category" />
+                                                        </div>
+
                                                     </div>
 
                                                     <div className="col-span-12 sm:col-span-12 md:col-span-12">
@@ -775,6 +865,58 @@ const AddItem = () => {
                         }}
                     </Formik>
                 </Card>
+
+                {/* category */}
+                <Modal
+                    title={"Add Category"}
+                    size="sm"
+                    isOpen={addCategoryModal}
+                    onClose={() => setAddCategoryModal(false)}
+                >
+                    <Formik
+                        initialValues={{
+                            category_name: ""
+                        }}
+                        validationSchema={Yup.object().shape({
+                            category_name: Yup.string().required("Category is required"),
+
+                        })}
+                        onSubmit={handleAddCategory}
+                    >
+                        {({ values, handleChange, handleSubmit, setFieldValue, validateField, errors, touched }) => {
+
+                            return (
+                                <Form>
+                                    <div className="p-5">
+                                        <AppInput
+                                            type="text"
+                                            label="Category Name"
+                                            name="category_name"
+                                            value={values.category_name}
+                                            onChange={handleChange("category_name")}
+                                        />
+                                        <ErrorMessage name="category_name" component="div" style={{ color: "red", fontSize: "13px" }} />
+                                    </div>
+
+                                    <div className="flex-end gap-3 mt-10">
+                                        <Button
+                                            title={"Cancel"}
+                                            onClick={() => setAddCategoryModal(false)}
+                                            color={"bg-red-500"}
+                                        />
+                                        <Button
+                                            title={"Add"}
+                                            onClick={handleSubmit}
+                                            spinner={loading ? <Spinner size="sm" /> : null}
+                                        />
+                                    </div>
+                                </Form>
+                            );
+                        }}
+                    </Formik>
+
+                </Modal>
+
             </div>
         </>
     );

@@ -5,11 +5,12 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export const getItems = createAsyncThunk(
     "item/getItems", // Ensure this matches your slice name and action
-    async ({ currentPage = 1, perPage = 10, search = '' }, { rejectWithValue }) => {
+    async ({ currentPage = 1, perPage = 10, search = '', product_catalog, product_category, type }, { rejectWithValue }) => {
         try {
             const { data } = await axios.get(`${API_URL}/item/get/list`, {
-                params: { currentPage, perPage, name: search },
+                params: { currentPage, perPage, name: search, product_catalog, product_category, type },
             });
+            console.log("data", data)
             return data;
         } catch (error) {
             console.log(error);
