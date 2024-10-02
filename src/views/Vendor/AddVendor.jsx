@@ -846,58 +846,58 @@ const AddVendor = () => {
         </Form>
       </Card>
 
-      {/* currency */}
-      <Modal
-        title={"Add Currency"}
-        size="sm"
-        isOpen={addCurrencyModal}
-        onClose={() => setAddCurrencyModal(false)}
+    {/* currency */}
+    <Modal
+      title={"Add Currency"}
+      size="sm"
+      isOpen={addCurrencyModal}
+      onClose={() => setAddCurrencyModal(false)}
+    >
+      <Form
+        initialValues={{
+          currency: "",
+        }}
+        validationSchema={Yup.object().shape({
+          currency: Yup.string().required("Currency is required"),
+
+        })}
+        onSubmit={handleAddCategory}
       >
-        <Form
-          initialValues={{
-            currency: "",
-          }}
-          validationSchema={Yup.object().shape({
-            currency: Yup.string().required("Currency is required"),
+        {({ values, handleChange, handleSubmit }) => (
+          <>
 
-          })}
-          onSubmit={handleAddCategory}
-        >
-          {({ values, handleChange, handleSubmit }) => (
-            <>
+            <div className="p-2 container mx-auto">
+              <div className="grid grid-cols-12 gap-4">
 
-              <div className="p-2 container mx-auto">
-                <div className="grid grid-cols-12 gap-4">
-
-                  <div className="pb-5 col-span-12 sm:col-span-12 md:col-span-12">
-                    <AppInput
-                      type="text"
-                      label="Currency"
-                      name={values["currency"]}
-                      value={values["currency"]}
-                      onChange={handleChange("currency")}
-                    />
-                    <ErrorMessage name={"currency"} />
-                  </div>
-
-                  <div className="flex-center col-span-12 sm:col-span-12 md:col-span-12">
-                    <div className="sticky bottom-0 w-full">
-                      <Button
-                        onClick={loading ? "" : handleSubmit}
-                        title={"Add"}
-                        width={true}
-                        spinner={loading ? <Spinner size="sm" /> : null}
-                      />
-                    </div>
-                  </div>
-
+                <div className="pb-5 col-span-12 sm:col-span-12 md:col-span-12">
+                  <AppInput
+                    type="text"
+                    label="Currency"
+                    name={values["currency"]}
+                    value={values["currency"]}
+                    onChange={handleChange("currency")}
+                  />
+                  <ErrorMessage name={"currency"} />
                 </div>
-              </div>
-            </>
-          )}
-        </Form>
 
-      </Modal>
+                <div className="flex-center col-span-12 sm:col-span-12 md:col-span-12">
+                  <div className="sticky bottom-0 w-full">
+                    <Button
+                      onClick={loading ? "" : handleSubmit}
+                      title={"Add"}
+                      width={true}
+                      spinner={loading ? <Spinner size="sm" /> : null}
+                    />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </>
+        )}
+      </Form>
+
+    </Modal>
 
       {/* paymentTerm */}
       <Modal

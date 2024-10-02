@@ -211,6 +211,7 @@ const Vendor = () => {
 
   useEffect(() => {
     if (isFilterApplied) {
+      console.log("fetchFilteredData()", fetchFilteredData());
       fetchFilteredData();
     }
   }, [fetchFilteredData, isFilterApplied]);
